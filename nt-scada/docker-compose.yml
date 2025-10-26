@@ -1,0 +1,216 @@
+version: '3.8'
+
+services:
+  # Zookeeper for Kafka coordination
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.5.0
+    container_name: nt-scada-zookeeper
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+    ports:
+      - "2181:2181"
+    networks:
+      - scada-network
+
+  # Kafka broker for real-time data ingestion
+  kafka:
+    image: confluentinc/cp-kafka:7.5.0
+    container_name: nt-scada-kafka
+    depends_on:
+      - zookeeper
+    ports:
+      - "9092:9092"
+      - "29092:29092"
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:29092,PLAINTEXT_HOST://localhost:9092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
+    networks:
+      - scada-network
+    healthcheck:
+      test: ["CMD", "kafka-broker-api-versions", "--bootstrap-server", "localhost:9092"]
+      interval: 10s
+      timeout: 10s
+      retries: 5
+
+  # InfluxDB for time-series data storage
+  influxdb:
+    image: influxdb:2.7
+    container_name: nt-scada-influxdb
+    ports:
+      - "8086:8086"
+    environment:
+      DOCKER_INFLUXDB_INIT_MODE: setup
+      DOCKER_INFLUXDB_INIT_USERNAME: admin
+      DOCKER_INFLUXDB_INIT_PASSWORD: adminpass123
+      DOCKER_INFLUXDB_INIT_ORG: nt-scada
+      DOCKER_INFLUXDB_INIT_BUCKET: scada_data
+      DOCKER_INFLUXDB_INIT_ADMIN_TOKEN: nt-scada-token-secret-key-12345
+    volumes:
+      - influxdb-data:/var/lib/influxdb2
+    networks:
+      - scada-network
+    healthcheck:
+      test: ["CMD", "influx", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Grafana for visualization
+  grafana:
+    image: grafana/grafana:10.2.0
+    container_name: nt-scada-grafana
+    depends_on:
+      - influxdb
+    ports:
+      - "3000:3000"
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: admin
+      GF_INSTALL_PLUGINS: ""
+    volumes:
+      - grafana-data:/var/lib/grafana
+      - ./dashboards:/etc/grafana/provisioning/dashboards
+      - ./grafana-datasources.yml:/etc/grafana/provisioning/datasources/datasources.yml
+    networks:
+      - scada-network
+
+  # Flink JobManager
+  flink-jobmanager:
+    image: flink:1.18.0-scala_2.12-java11
+    container_name: nt-scada-flink-jobmanager
+    ports:
+      - "8081:8081"
+    command: jobmanager
+    environment:
+      FLINK_PROPERTIES: |
+        jobmanager.rpc.address: flink-jobmanager
+        taskmanager.numberOfTaskSlots: 2
+    volumes:
+      - ./stream:/opt/flink/jobs
+      - flink-checkpoints:/tmp/flink-checkpoints
+    networks:
+      - scada-network
+
+  # Flink TaskManager
+  flink-taskmanager:
+    image: flink:1.18.0-scala_2.12-java11
+    container_name: nt-scada-flink-taskmanager
+    depends_on:
+      - flink-jobmanager
+    command: taskmanager
+    environment:
+      FLINK_PROPERTIES: |
+        jobmanager.rpc.address: flink-jobmanager
+        taskmanager.numberOfTaskSlots: 2
+    volumes:
+      - ./stream:/opt/flink/jobs
+      - flink-checkpoints:/tmp/flink-checkpoints
+    networks:
+      - scada-network
+
+  # Sensor data producer
+  sensor-producer:
+    build:
+      context: ./producers
+      dockerfile: Dockerfile
+    container_name: nt-scada-sensor-producer
+    depends_on:
+      kafka:
+        condition: service_healthy
+    environment:
+      KAFKA_BOOTSTRAP_SERVERS: kafka:29092
+      PRODUCER_TYPE: sensor
+    networks:
+      - scada-network
+    restart: unless-stopped
+
+  # Actuator data producer
+  actuator-producer:
+    build:
+      context: ./producers
+      dockerfile: Dockerfile
+    container_name: nt-scada-actuator-producer
+    depends_on:
+      kafka:
+        condition: service_healthy
+    environment:
+      KAFKA_BOOTSTRAP_SERVERS: kafka:29092
+      PRODUCER_TYPE: actuator
+    networks:
+      - scada-network
+    restart: unless-stopped
+
+  # Stream processor (Flink job wrapper)
+  stream-processor:
+    build:
+      context: ./stream
+      dockerfile: Dockerfile
+    container_name: nt-scada-stream-processor
+    depends_on:
+      - kafka
+      - influxdb
+      - flink-jobmanager
+    environment:
+      KAFKA_BOOTSTRAP_SERVERS: kafka:29092
+      INFLUXDB_URL: http://influxdb:8086
+      INFLUXDB_TOKEN: nt-scada-token-secret-key-12345
+      INFLUXDB_ORG: nt-scada
+      INFLUXDB_BUCKET: scada_data
+    networks:
+      - scada-network
+    restart: unless-stopped
+
+  # InfluxDB consumer
+  influx-consumer:
+    build:
+      context: ./storage
+      dockerfile: Dockerfile
+    container_name: nt-scada-influx-consumer
+    depends_on:
+      kafka:
+        condition: service_healthy
+      influxdb:
+        condition: service_healthy
+    environment:
+      KAFKA_BOOTSTRAP_SERVERS: kafka:29092
+      INFLUXDB_URL: http://influxdb:8086
+      INFLUXDB_TOKEN: nt-scada-token-secret-key-12345
+      INFLUXDB_ORG: nt-scada
+      INFLUXDB_BUCKET: scada_data
+    networks:
+      - scada-network
+    restart: unless-stopped
+
+  # Batch analytics (runs periodically)
+  batch-analytics:
+    build:
+      context: ./batch
+      dockerfile: Dockerfile
+    container_name: nt-scada-batch-analytics
+    depends_on:
+      - influxdb
+    environment:
+      INFLUXDB_URL: http://influxdb:8086
+      INFLUXDB_TOKEN: nt-scada-token-secret-key-12345
+      INFLUXDB_ORG: nt-scada
+      INFLUXDB_BUCKET: scada_data
+    volumes:
+      - ./batch/models:/app/models
+      - ./batch/reports:/app/reports
+    networks:
+      - scada-network
+
+networks:
+  scada-network:
+    driver: bridge
+
+volumes:
+  influxdb-data:
+  grafana-data:
+  flink-checkpoints:

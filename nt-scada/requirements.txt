@@ -1,0 +1,18 @@
+# NT-SCADA Python Dependencies
+# Install with: pip install -r requirements.txt
+
+# Kafka
+kafka-python==2.0.2
+
+# InfluxDB
+influxdb-client==1.38.0
+
+# Data Processing
+pandas==2.1.3
+numpy==1.26.2
+
+# Machine Learning
+scikit-learn==1.3.2
+
+# Stream Processing (optional - for Flink)
+apache-flink==1.18.0
