@@ -4,7 +4,7 @@ services:
   # ============================================
   # INFRASTRUCTURE LAYER (Kafka, Zookeeper)
   # ============================================
-  
+
   zookeeper:
     image: confluentinc/cp-zookeeper:7.7.0
     container_name: zookeeper
@@ -27,18 +27,21 @@ services:
       KAFKA_BROKER_ID: 1
       KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
       KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:29092,PLAINTEXT_HOST://0.0.0.0:9092
-      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:29092,PLAINTEXT_HOST://localhost:9092
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:29092,PLAINTEXT_HOST://host.docker.internal:9092
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
       KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
       KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
+      KAFKA_MESSAGE_MAX_BYTES: 2147483647
+      KAFKA_REPLICA_FETCH_MAX_BYTES: 2147483647
+      KAFKA_FETCH_MESSAGE_MAX_BYTES: 2147483647
     networks:
       - scada-network
-    healthcheck:
-      test: ["CMD", "kafka-broker-api-versions", "--bootstrap-server", "localhost:9092"]
-      interval: 10s
-      timeout: 10s
-      retries: 5
+    #healthcheck:
+     # test: ["CMD", "kafka-broker-api-versions", "--bootstrap-server", "kafka:29092"]
+     # interval: 10s
+     # timeout: 10s
+     # retries: 10
 
   kafka-ui:
     image: provectuslabs/kafka-ui:latest
@@ -56,7 +59,7 @@ services:
   # ============================================
   # STORAGE LAYER (InfluxDB 2.x)
   # ============================================
-  
+
   influxdb:
     image: influxdb:2.7
     container_name: influxdb
@@ -82,7 +85,7 @@ services:
   # ============================================
   # VISUALIZATION LAYER (Grafana)
   # ============================================
-  
+
   grafana:
     image: grafana/grafana:10.2.0
     container_name: grafana
@@ -104,7 +107,7 @@ services:
   # ============================================
   # STREAM PROCESSING LAYER (Flink)
   # ============================================
-  
+
   flink-jobmanager:
     image: flink:1.18.0-scala_2.12-java11
     container_name: flink-jobmanager
@@ -138,25 +141,9 @@ services:
       - scada-network
 
   # ============================================
-  # DATA COLLECTION (Telegraf - Optional)
-  # ============================================
-  
-  # telegraf:
-  #   image: telegraf:1.25
-  #   container_name: telegraf
-  #   depends_on:
-  #     - kafka
-  #     - influxdb
-  #   volumes:
-  #     - ./telegraf/telegraf.conf:/etc/telegraf/telegraf.conf:ro
-  #   networks:
-  #     - scada-network
-  #   # Note: Telegraf config needs updating for InfluxDB 2.x
-
-  # ============================================
   # NT-SCADA DATA PRODUCERS
   # ============================================
-  
+
   sensor-producer:
     build:
       context: ./nt-scada/producers
@@ -190,7 +177,7 @@ services:
   # ============================================
   # NT-SCADA STREAM PROCESSOR
   # ============================================
-  
+
   stream-processor:
     build:
       context: ./nt-scada/stream
@@ -213,7 +200,7 @@ services:
   # ============================================
   # NT-SCADA INFLUXDB CONSUMER
   # ============================================
-  
+
   influx-consumer:
     build:
       context: ./nt-scada/storage
@@ -237,7 +224,7 @@ services:
   # ============================================
   # NT-SCADA BATCH ANALYTICS
   # ============================================
-  
+
   batch-analytics:
     build:
       context: ./nt-scada/batch

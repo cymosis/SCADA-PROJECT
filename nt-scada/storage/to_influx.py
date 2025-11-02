@@ -44,25 +44,37 @@ print(f"✓ Connected to InfluxDB bucket '{INFLUXDB_BUCKET}' at {INFLUXDB_URL}")
 # -----------------------------
 message_count = 0
 
+# Define which keys are tags
+TAG_KEYS = ["P1_STATE", "P2_STATE", "P3_STATE", "P4_STATE", "P5_STATE", "P6_STATE"]
+
 try:
     for msg in consumer:
         data = msg.value  # JSON message
 
         # Create InfluxDB Point
-        point = Point("normal_data")
+        point = Point("actuator_data")
 
+        # Add tags dynamically
+        for tag_key in TAG_KEYS:
+            if tag_key in data:
+                point.tag(tag_key, str(data[tag_key]))
+
+        # Add all other fields
         for key, value in data.items():
             if key == "t_stamp":
-                # Use t_stamp as the point's timestamp
                 point.time(value, WritePrecision.NS)
-            else:
-                # All other keys as tags (converted to string)
-                point.tag(key, str(value))
+            elif key not in TAG_KEYS:
+                # Force numeric types to float, everything else as string
+                if isinstance(value, (int, float)):
+                    point.field(key, float(value))
+                else:
+                    point.field(key, str(value))
 
         # Write to InfluxDB
         write_api.write(bucket=INFLUXDB_BUCKET, org=INFLUXDB_ORG, record=point)
         message_count += 1
 
+        # Log progress every 100 messages
         if message_count % 100 == 0:
             print(f"✓ {message_count} messages written")
 
