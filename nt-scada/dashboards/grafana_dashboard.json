@@ -1,95 +1,491 @@
 {
   "dashboard": {
     "id": null,
-    "title": "NT-SCADA Equipment Monitoring",
+    "uid": null,
+    "title": "NT-SCADA Equipment Monitoring Dashboard",
+    "tags": ["scada", "industrial", "monitoring"],
     "schemaVersion": 36,
-    "version": 1,
+    "version": 2,
     "refresh": "10s",
+    "style": "dark",
+    "timezone": "browser",
+    "editable": true,
+    "fiscalYearStartMonth": 0,
+    "graphTooltip": 1,
     "panels": [
       {
-        "type": "text",
-        "title": "P1 - Raw Water",
-        "content": "<h2>Tank Levels</h2>",
-        "gridPos": {"x":0,"y":0,"w":24,"h":2}
+        "type": "row",
+        "title": "🌊 P1 - RAW WATER SYSTEM",
+        "gridPos": {"x":0,"y":0,"w":24,"h":1},
+        "collapsed": false
+      },
+      {
+        "type": "gauge",
+        "title": "Tank Level - LIT101",
+        "datasource": "InfluxDB",
+        "targets": [{
+          "query": "from(bucket:\"scada_data_v2\") |> range(start: -5m) |> filter(fn:(r) => r.P1_STATE == 3) |> filter(fn:(r) => r._field == \"LIT101.Pv\") |> last()",
+          "refId": "A"
+        }],
+        "gridPos": {"x":0,"y":1,"w":6,"h":6},
+        "options": {
+          "showThresholdLabels": true,
+          "showThresholdMarkers": true
+        },
+        "fieldConfig": {
+          "defaults": {
+            "unit": "percent",
+            "min": 0,
+            "max": 100,
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"value": 0, "color": "red"},
+                {"value": 20, "color": "yellow"},
+                {"value": 40, "color": "green"},
+                {"value": 80, "color": "yellow"},
+                {"value": 95, "color": "red"}
+              ]
+            }
+          }
+        }
+      },
+      {
+        "type": "stat",
+        "title": "Tank Level Trend",
+        "datasource": "InfluxDB",
+        "targets": [{
+          "query": "from(bucket:\"scada_data_v2\") |> range(start: -5m) |> filter(fn:(r) => r.P1_STATE == 3) |> filter(fn:(r) => r._field == \"LIT101.Pv\") |> tail(n: 10)",
+          "refId": "A"
+        }],
+        "gridPos": {"x":6,"y":1,"w":6,"h":3},
+        "options": {
+          "graphMode": "area",
+          "colorMode": "value",
+          "textMode": "value_and_name"
+        },
+        "fieldConfig": {
+          "defaults": {
+            "unit": "percent",
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"value": 0, "color": "red"},
+                {"value": 40, "color": "green"},
+                {"value": 80, "color": "yellow"}
+              ]
+            }
+          }
+        }
+      },
+      {
+        "type": "stat",
+        "title": "Flow Rate - FIT101",
+        "datasource": "InfluxDB",
+        "targets": [{
+          "query": "from(bucket:\"scada_data_v2\") |> range(start: -5m) |> filter(fn:(r) => r.P1_STATE == 3) |> filter(fn:(r) => r._field == \"FIT101.Pv\") |> tail(n: 10)",
+          "refId": "B"
+        }],
+        "gridPos": {"x":12,"y":1,"w":6,"h":3},
+        "options": {
+          "graphMode": "area",
+          "colorMode": "value",
+          "textMode": "value_and_name"
+        },
+        "fieldConfig": {
+          "defaults": {
+            "unit": "litersPerMin",
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"value": 0, "color": "blue"},
+                {"value": 50, "color": "green"},
+                {"value": 100, "color": "yellow"}
+              ]
+            }
+          }
+        }
       },
       {
         "type": "timeseries",
-        "title": "Raw Water Tank Level (LIT101)",
+        "title": "Flow History (Last 10 Points)",
         "datasource": "InfluxDB",
-        "targets": [{"query":"from(bucket:\"scada_data_v2\") |> range(start:1970-01-01T00:00:00Z) |> filter(fn:(r) => r.P1_STATE == 3) |> filter(fn:(r) => r._field == \"LIT101.Pv\")","refId":"A"}],
-        "gridPos": {"x":0,"y":2,"w":12,"h":4}
+        "targets": [{
+          "query": "from(bucket:\"scada_data_v2\") |> range(start: -5m) |> filter(fn:(r) => r.P1_STATE == 3) |> filter(fn:(r) => r._field == \"FIT101.Pv\") |> tail(n: 10)",
+          "refId": "B"
+        }],
+        "gridPos": {"x":18,"y":1,"w":6,"h":3},
+        "fieldConfig": {
+          "defaults": {
+            "custom": {
+              "drawStyle": "line",
+              "lineInterpolation": "smooth",
+              "fillOpacity": 20,
+              "showPoints": "always"
+            },
+            "color": {"mode": "palette-classic"},
+            "unit": "litersPerMin"
+          }
+        }
       },
       {
         "type": "timeseries",
-        "title": "Raw Water Flow (FIT101)",
+        "title": "Tank Level History (Last 10 Points)",
         "datasource": "InfluxDB",
-        "targets": [{"query":"from(bucket:\"scada_data_v2\") |> range(start:1970-01-01T00:00:00Z) |> filter(fn:(r) => r.P1_STATE == 3) |> filter(fn:(r) => r._field == \"FIT101.Pv\")","refId":"B"}],
-        "gridPos": {"x":12,"y":2,"w":12,"h":4}
+        "targets": [{
+          "query": "from(bucket:\"scada_data_v2\") |> range(start: -5m) |> filter(fn:(r) => r.P1_STATE == 3) |> filter(fn:(r) => r._field == \"LIT101.Pv\") |> tail(n: 10)",
+          "refId": "A"
+        }],
+        "gridPos": {"x":6,"y":4,"w":12,"h":3},
+        "fieldConfig": {
+          "defaults": {
+            "custom": {
+              "drawStyle": "line",
+              "lineInterpolation": "smooth",
+              "fillOpacity": 30,
+              "showPoints": "always",
+              "gradientMode": "opacity"
+            },
+            "color": {"mode": "thresholds"},
+            "unit": "percent",
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"value": 0, "color": "red"},
+                {"value": 40, "color": "green"},
+                {"value": 80, "color": "yellow"}
+              ]
+            }
+          }
+        }
       },
       {
-        "type": "text",
-        "title": "Pumps & Valves",
-        "content": "<h2>Pumps & Valve Status</h2>",
-        "gridPos": {"x":0,"y":6,"w":24,"h":2}
+        "type": "bargauge",
+        "title": "Pump & Valve Status",
+        "datasource": "InfluxDB",
+        "targets": [{
+          "query": "from(bucket:\"scada_data_v2\") |> range(start: -5m) |> filter(fn:(r) => r.P1_STATE == 3) |> filter(fn:(r) => r._field =~ /P101\\.Status$|P102\\.Status$|MV101\\.Status$/) |> last()",
+          "refId": "C"
+        }],
+        "gridPos": {"x":18,"y":4,"w":6,"h":3},
+        "options": {
+          "orientation": "horizontal",
+          "displayMode": "gradient",
+          "showUnfilled": true
+        },
+        "fieldConfig": {
+          "defaults": {
+            "min": 0,
+            "max": 1,
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"value": 0, "color": "dark-red"},
+                {"value": 0.5, "color": "dark-yellow"},
+                {"value": 1, "color": "dark-green"}
+              ]
+            },
+            "mappings": [
+              {"type": "value", "value": "0", "text": "OFF"},
+              {"type": "value", "value": "1", "text": "RUNNING"}
+            ]
+          }
+        }
       },
       {
         "type": "timeseries",
-        "title": "Raw Water Pumps & Valve Status (P101, P102, MV101)",
+        "title": "Equipment Status Timeline (P101, P102, MV101)",
         "datasource": "InfluxDB",
-        "targets": [{"query":"from(bucket:\"scada_data_v2\") |> range(start:1970-01-01T00:00:00Z) |> filter(fn:(r) => r.P1_STATE == 3) |> filter(fn:(r) => r._field =~ /P101\\.Status$|P102\\.Status$|MV101\\.Status$/)","refId":"C"}],
-        "gridPos": {"x":0,"y":8,"w":24,"h":4}
-      },
-      {
-        "type": "text",
-        "title": "Alarms",
-        "content": "<h2>Alarms</h2>",
-        "gridPos": {"x":0,"y":12,"w":24,"h":2}
+        "targets": [{
+          "query": "from(bucket:\"scada_data_v2\") |> range(start: -5m) |> filter(fn:(r) => r.P1_STATE == 3) |> filter(fn:(r) => r._field =~ /P101\\.Status$|P102\\.Status$|MV101\\.Status$/) |> tail(n: 10)",
+          "refId": "C"
+        }],
+        "gridPos": {"x":0,"y":7,"w":24,"h":4},
+        "fieldConfig": {
+          "defaults": {
+            "custom": {
+              "drawStyle": "bars",
+              "lineInterpolation": "stepAfter",
+              "barAlignment": 0,
+              "fillOpacity": 80,
+              "showPoints": "never"
+            },
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"value": 0, "color": "red"},
+                {"value": 1, "color": "green"}
+              ]
+            },
+            "mappings": [
+              {"type": "value", "value": "0", "text": "OFF", "color": "red"},
+              {"type": "value", "value": "1", "text": "ON", "color": "green"}
+            ]
+          }
+        }
       },
       {
         "type": "table",
-        "title": "Raw Water Alarms (LS201, LS202, LSL203)",
+        "title": "🚨 Active Alarms - Raw Water",
         "datasource": "InfluxDB",
-        "targets": [{"query":"from(bucket:\"scada_data_v2\") |> range(start:1970-01-01T00:00:00Z) |> filter(fn:(r) => r.P1_STATE == 3) |> filter(fn:(r) => r._field =~ /LS201\\.Alarm$|LS202\\.Alarm$|LSL203\\.Alarm$/)","refId":"D"}],
-        "gridPos": {"x":0,"y":14,"w":24,"h":4}
+        "targets": [{
+          "query": "from(bucket:\"scada_data_v2\") |> range(start: -5m) |> filter(fn:(r) => r.P1_STATE == 3) |> filter(fn:(r) => r._field =~ /LS201\\.Alarm$|LS202\\.Alarm$|LSL203\\.Alarm$/) |> tail(n: 10)",
+          "refId": "D"
+        }],
+        "gridPos": {"x":0,"y":11,"w":24,"h":4},
+        "fieldConfig": {
+          "defaults": {
+            "custom": {
+              "align": "center",
+              "displayMode": "color-background"
+            },
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"value": 0, "color": "green"},
+                {"value": 1, "color": "red"}
+              ]
+            },
+            "mappings": [
+              {"type": "value", "value": "0", "text": "NORMAL"},
+              {"type": "value", "value": "1", "text": "ALARM"}
+            ]
+          }
+        }
       },
       {
-        "type": "text",
-        "title": "P2 - Chemical Dosing",
-        "content": "<h2>Flows & Pressures</h2>",
-        "gridPos": {"x":0,"y":18,"w":24,"h":2}
+        "type": "row",
+        "title": "⚗️ P2 - CHEMICAL DOSING SYSTEM",
+        "gridPos": {"x":0,"y":15,"w":24,"h":1},
+        "collapsed": false
+      },
+      {
+        "type": "stat",
+        "title": "Chemical Flow - FIT201",
+        "datasource": "InfluxDB",
+        "targets": [{
+          "query": "from(bucket:\"scada_data_v2\") |> range(start: -5m) |> filter(fn:(r) => r.P2_STATE == 2) |> filter(fn:(r) => r._field == \"FIT201.Pv\") |> tail(n: 10)",
+          "refId": "E"
+        }],
+        "gridPos": {"x":0,"y":16,"w":6,"h":4},
+        "options": {
+          "graphMode": "area",
+          "colorMode": "value",
+          "textMode": "value_and_name",
+          "orientation": "auto"
+        },
+        "fieldConfig": {
+          "defaults": {
+            "unit": "litersPerMin",
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"value": 0, "color": "blue"},
+                {"value": 10, "color": "green"},
+                {"value": 50, "color": "yellow"}
+              ]
+            }
+          }
+        }
+      },
+      {
+        "type": "gauge",
+        "title": "Tank AIT201",
+        "datasource": "InfluxDB",
+        "targets": [{
+          "query": "from(bucket:\"scada_data_v2\") |> range(start: -5m) |> filter(fn:(r) => r.P2_STATE == 2) |> filter(fn:(r) => r._field == \"AIT201.Pv\") |> last()",
+          "refId": "E1"
+        }],
+        "gridPos": {"x":6,"y":16,"w":6,"h":4},
+        "options": {
+          "showThresholdLabels": false,
+          "showThresholdMarkers": true
+        },
+        "fieldConfig": {
+          "defaults": {
+            "unit": "percent",
+            "min": 0,
+            "max": 100,
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"value": 0, "color": "red"},
+                {"value": 30, "color": "yellow"},
+                {"value": 50, "color": "green"}
+              ]
+            }
+          }
+        }
+      },
+      {
+        "type": "gauge",
+        "title": "Tank AIT202",
+        "datasource": "InfluxDB",
+        "targets": [{
+          "query": "from(bucket:\"scada_data_v2\") |> range(start: -5m) |> filter(fn:(r) => r.P2_STATE == 2) |> filter(fn:(r) => r._field == \"AIT202.Pv\") |> last()",
+          "refId": "E2"
+        }],
+        "gridPos": {"x":12,"y":16,"w":6,"h":4},
+        "options": {
+          "showThresholdLabels": false,
+          "showThresholdMarkers": true
+        },
+        "fieldConfig": {
+          "defaults": {
+            "unit": "percent",
+            "min": 0,
+            "max": 100,
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"value": 0, "color": "red"},
+                {"value": 30, "color": "yellow"},
+                {"value": 50, "color": "green"}
+              ]
+            }
+          }
+        }
+      },
+      {
+        "type": "gauge",
+        "title": "Tank AIT203",
+        "datasource": "InfluxDB",
+        "targets": [{
+          "query": "from(bucket:\"scada_data_v2\") |> range(start: -5m) |> filter(fn:(r) => r.P2_STATE == 2) |> filter(fn:(r) => r._field == \"AIT203.Pv\") |> last()",
+          "refId": "E3"
+        }],
+        "gridPos": {"x":18,"y":16,"w":6,"h":4},
+        "options": {
+          "showThresholdLabels": false,
+          "showThresholdMarkers": true
+        },
+        "fieldConfig": {
+          "defaults": {
+            "unit": "percent",
+            "min": 0,
+            "max": 100,
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"value": 0, "color": "red"},
+                {"value": 30, "color": "yellow"},
+                {"value": 50, "color": "green"}
+              ]
+            }
+          }
+        }
       },
       {
         "type": "timeseries",
-        "title": "Chemical Flow & Tank Levels (FIT201, AIT201-203)",
+        "title": "Chemical Tank Levels - Trend (Last 10 Points)",
         "datasource": "InfluxDB",
-        "targets": [{"query":"from(bucket:\"scada_data_v2\") |> range(start:1970-01-01T00:00:00Z) |> filter(fn:(r) => r.P2_STATE == 2) |> filter(fn:(r) => r._field =~ /FIT201\\.Pv$|AIT201\\.Pv$|AIT202\\.Pv$|AIT203\\.Pv$/)","refId":"E"}],
-        "gridPos": {"x":0,"y":20,"w":12,"h":4}
+        "targets": [{
+          "query": "from(bucket:\"scada_data_v2\") |> range(start: -5m) |> filter(fn:(r) => r.P2_STATE == 2) |> filter(fn:(r) => r._field =~ /AIT201\\.Pv$|AIT202\\.Pv$|AIT203\\.Pv$/) |> tail(n: 10)",
+          "refId": "E"
+        }],
+        "gridPos": {"x":0,"y":20,"w":24,"h":5},
+        "fieldConfig": {
+          "defaults": {
+            "custom": {
+              "drawStyle": "line",
+              "lineInterpolation": "smooth",
+              "fillOpacity": 25,
+              "showPoints": "always",
+              "pointSize": 5
+            },
+            "color": {"mode": "palette-classic"},
+            "unit": "percent"
+          }
+        }
       },
       {
-        "type": "text",
-        "title": "Pumps",
-        "content": "<h2>Pumps Status</h2>",
-        "gridPos": {"x":0,"y":24,"w":24,"h":2}
+        "type": "bargauge",
+        "title": "Dosing Pumps Status (P201-P208)",
+        "datasource": "InfluxDB",
+        "targets": [{
+          "query": "from(bucket:\"scada_data_v2\") |> range(start: -5m) |> filter(fn:(r) => r.P2_STATE == 2) |> filter(fn:(r) => r._field =~ /P201\\.Status$|P202\\.Status$|P203\\.Status$|P204\\.Status$|P205\\.Status$|P206\\.Status$|P207\\.Status$|P208\\.Status$/) |> last()",
+          "refId": "F"
+        }],
+        "gridPos": {"x":0,"y":25,"w":12,"h":5},
+        "options": {
+          "orientation": "horizontal",
+          "displayMode": "lcd",
+          "showUnfilled": true
+        },
+        "fieldConfig": {
+          "defaults": {
+            "min": 0,
+            "max": 1,
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"value": 0, "color": "dark-red"},
+                {"value": 1, "color": "dark-green"}
+              ]
+            },
+            "mappings": [
+              {"type": "value", "value": "0", "text": "STOPPED"},
+              {"type": "value", "value": "1", "text": "RUNNING"}
+            ]
+          }
+        }
       },
       {
         "type": "timeseries",
-        "title": "Chemical Dosing Pumps (P201-P208)",
+        "title": "Pump Activity Timeline (Last 10 States)",
         "datasource": "InfluxDB",
-        "targets": [{"query":"from(bucket:\"scada_data_v2\") |> range(start:1970-01-01T00:00:00Z) |> filter(fn:(r) => r.P2_STATE == 2) |> filter(fn:(r) => r._field =~ /P201\\.Status$|P202\\.Status$|P203\\.Status$|P204\\.Status$|P205\\.Status$|P206\\.Status$|P207\\.Status$|P208\\.Status$/)","refId":"F"}],
-        "gridPos": {"x":0,"y":26,"w":24,"h":4}
-      },
-      {
-        "type": "text",
-        "title": "Alarms",
-        "content": "<h2>Alarms</h2>",
-        "gridPos": {"x":0,"y":30,"w":24,"h":2}
+        "targets": [{
+          "query": "from(bucket:\"scada_data_v2\") |> range(start: -5m) |> filter(fn:(r) => r.P2_STATE == 2) |> filter(fn:(r) => r._field =~ /P201\\.Status$|P202\\.Status$|P203\\.Status$|P204\\.Status$/) |> tail(n: 10)",
+          "refId": "F1"
+        }],
+        "gridPos": {"x":12,"y":25,"w":12,"h":5},
+        "fieldConfig": {
+          "defaults": {
+            "custom": {
+              "drawStyle": "bars",
+              "lineInterpolation": "stepAfter",
+              "barAlignment": 0,
+              "fillOpacity": 90,
+              "showPoints": "never"
+            },
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"value": 0, "color": "red"},
+                {"value": 1, "color": "green"}
+              ]
+            }
+          }
+        }
       },
       {
         "type": "table",
-        "title": "Chemical Dosing Alarms (LSLL203)",
+        "title": "🚨 Chemical Dosing Alarms",
         "datasource": "InfluxDB",
-        "targets": [{"query":"from(bucket:\"scada_data_v2\") |> range(start:1970-01-01T00:00:00Z) |> filter(fn:(r) => r.P2_STATE == 2) |> filter(fn:(r) => r._field =~ /LSLL203\\.Alarm$/)","refId":"G"}],
-        "gridPos": {"x":0,"y":32,"w":24,"h":4}
+        "targets": [{
+          "query": "from(bucket:\"scada_data_v2\") |> range(start: -5m) |> filter(fn:(r) => r.P2_STATE == 2) |> filter(fn:(r) => r._field =~ /LSLL203\\.Alarm$/) |> tail(n: 10)",
+          "refId": "G"
+        }],
+        "gridPos": {"x":0,"y":30,"w":24,"h":4},
+        "fieldConfig": {
+          "defaults": {
+            "custom": {
+              "align": "center",
+              "displayMode": "color-background"
+            },
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"value": 0, "color": "green"},
+                {"value": 1, "color": "red"}
+              ]
+            },
+            "mappings": [
+              {"type": "value", "value": "0", "text": "✓ NORMAL"},
+              {"type": "value", "value": "1", "text": "⚠ ALARM"}
+            ]
+          }
+        }
       }
     ]
   },

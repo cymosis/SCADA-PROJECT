@@ -1,0 +1,44 @@
+{
+  "timestamp": "2025-11-02T11:51:46.987865",
+  "total_records": 7327,
+  "date_range": {
+    "start": "2025-11-02T11:03:13.452163+00:00",
+    "end": "2025-11-02T11:44:02.956753+00:00"
+  },
+  "sensors": {
+    "total_unique": 30,
+    "types": {
+      "temperature": 1226,
+      "pressure": 1221,
+      "flow_rate": 1220,
+      "vibration": 1220,
+      "voltage": 1220,
+      "current": 1220
+    }
+  },
+  "anomalies": {
+    "total": 899,
+    "percentage": 12.269687457349528,
+    "by_severity": {
+      "HIGH": 700,
+      "CRITICAL": 199
+    }
+  },
+  "operational_states": {
+    "OPTIMAL": 4758,
+    "BELOW_OPTIMAL": 865,
+    "ABOVE_OPTIMAL": 803,
+    "HIGH": 359,
+    "LOW": 342,
+    "CRITICALLY_HIGH": 115,
+    "CRITICALLY_LOW": 85
+  },
+  "value_statistics": {
+    "mean": 50.22400709703835,
+    "median": 50.32,
+    "std": 19.807808559451434,
+    "min": 0.0,
+    "max": 100.0
+  },
+  "daily_summary": {
+    

@@ -16,9 +16,9 @@ from kafka.errors import NoBrokersAvailable
 # -----------------------------
 KAFKA_BOOTSTRAP_SERVERS = os.getenv('KAFKA_BOOTSTRAP_SERVERS', 'localhost:9092')
 TOPIC = 'scada.actuators_v2'
-EXCEL_FILE = 'C:/scada-docker/Swat Data/Normal  Data 2023/22June2020 (1).xlsx'
+EXCEL_FILE = r'C:/scada-docker/Swat Data/Normal  Data 2023/22June2020 (1).xlsx'
 STREAM_DELAY = 0.1  # seconds between messages
-CHUNK_SIZE = 1000  # rows per chunk
+CHUNK_SIZE = 1000   # rows per chunk
 
 def create_kafka_producer():
     """Create Kafka producer with retry logic"""
@@ -65,18 +65,23 @@ def process_excel_in_chunks():
     chunk_num = 0
 
     try:
-        # Read Excel file in chunks
-        for chunk in pd.read_excel(EXCEL_FILE, chunksize=CHUNK_SIZE):
+        # ✅ Read the Excel file once and process in manual chunks
+        df = pd.read_excel(EXCEL_FILE)
+        total_rows = len(df)
+        print(f"Total rows in file: {total_rows}")
+
+        for i in range(0, total_rows, CHUNK_SIZE):
             chunk_num += 1
+            chunk = df.iloc[i:i + CHUNK_SIZE]
             print(f"\n📦 Processing chunk {chunk_num} ({len(chunk)} rows)...")
 
-            for i, row in chunk.iterrows():
+            for _, row in chunk.iterrows():
                 data = row.to_dict()
 
                 # Convert NaN to None
                 data = {k: (None if pd.isna(v) else v) for k, v in data.items()}
 
-                # Convert timestamp to ISO string
+                # Convert timestamp to ISO string if present
                 if 't_stamp' in data and data['t_stamp'] is not None:
                     data['t_stamp'] = pd.to_datetime(data['t_stamp']).isoformat()
 
@@ -104,7 +109,6 @@ def process_excel_in_chunks():
     finally:
         producer.close()
         print(f"✓ Producer stopped. Total messages sent: {message_count}")
-
 
 if __name__ == "__main__":
     process_excel_in_chunks()
