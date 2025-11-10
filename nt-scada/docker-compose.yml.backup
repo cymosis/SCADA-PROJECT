@@ -11,13 +11,13 @@ services:
     networks:
       - scada-network
     healthcheck:
-      test: ["CMD-SHELL", "echo stat | curl -f telnet://localhost:2181 || exit 1"]
-      interval: 15s
-      timeout: 10s
+      test: ["CMD-SHELL", "echo ruok | nc localhost 2181 | grep imok"]
+      interval: 10s
+      timeout: 5s
       retries: 5
       start_period: 30s
 
-  # Kafka broker for real-time data ingestion
+# Kafka broker for real-time data ingestion
   kafka:
     image: confluentinc/cp-kafka:7.5.0
     container_name: nt-scada-kafka
@@ -28,26 +28,34 @@ services:
       - "9092:9092"
       - "29092:29092"
     environment:
+      # All environment variables must be at the same 4-space indentation level
       KAFKA_BROKER_ID: 1
       KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+
+      # Define listeners and security protocols
       KAFKA_LISTENERS: INTERNAL://0.0.0.0:29092,EXTERNAL://0.0.0.0:9092
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INTERNAL:PLAINTEXT,EXTERNAL:PLAINTEXT
+      # Advertise listeners: 
+      # INTERNAL: Use the service name for internal Docker network communication
+      # EXTERNAL: Use localhost for host machine access (via port 9092)
       KAFKA_ADVERTISED_LISTENERS: INTERNAL://kafka:29092,EXTERNAL://localhost:9092
+      
+      # Set inter-broker communication to use the INTERNAL listener
       KAFKA_INTER_BROKER_LISTENER_NAME: INTERNAL
+
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
       KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
       KAFKA_ZOOKEEPER_SESSION_TIMEOUT_MS: 60000
     networks:
       - scada-network
     healthcheck:
-      # FIXED: Use internal listener and container name
-      test: ["CMD", "kafka-topics", "--bootstrap-server", "kafka:29092", "--list"]
+      # All healthcheck properties must be at the same 4-space indentation level
+      test: ["CMD", "kafka-topics", "--bootstrap-server", "localhost:9092", "--list"]
       interval: 15s
       timeout: 10s
       retries: 10
       start_period: 60s
-
-  # InfluxDB for time-series data storage
+# InfluxDB for time-series data storage
   influxdb:
     image: influxdb:2.7
     container_name: nt-scada-influxdb
@@ -70,7 +78,7 @@ services:
       timeout: 5s
       retries: 5
 
-  # Grafana for visualization
+# Grafana for visualization
   grafana:
     image: grafana/grafana:10.2.0
     container_name: nt-scada-grafana
@@ -90,7 +98,7 @@ services:
     networks:
       - scada-network
 
-  # Flink JobManager
+ # Flink JobManager
   flink-jobmanager:
     image: flink:1.18.0-scala_2.12-java11
     container_name: nt-scada-flink-jobmanager
@@ -106,13 +114,14 @@ services:
       - flink-checkpoints:/tmp/flink-checkpoints
     networks:
       - scada-network
+    # Note: No depends_on needed here
 
-  # Flink TaskManager
+# Flink TaskManager
   flink-taskmanager:
     image: flink:1.18.0-scala_2.12-java11
     container_name: nt-scada-flink-taskmanager
     depends_on:
-      flink-jobmanager:
+      flink-jobmanager: # Using long format for consistency
         condition: service_started
     command: taskmanager
     environment:
@@ -125,15 +134,15 @@ services:
     networks:
       - scada-network
 
-  # Sensor data producer
+# Sensor data producer
   sensor-producer:
     build:
       context: ./producers
       dockerfile: Dockerfile
     container_name: nt-scada-sensor-producer
     depends_on:
-      kafka:
-        condition: service_healthy  # FIXED: Wait for Kafka to be healthy
+      kafka: # Changed dependency to service_started
+        condition: service_started
     environment:
       KAFKA_BOOTSTRAP_SERVERS: kafka:29092
       PRODUCER_TYPE: sensor
@@ -141,15 +150,15 @@ services:
       - scada-network
     restart: unless-stopped
 
-  # Actuator data producer
+# Actuator data producer
   actuator-producer:
     build:
       context: ./producers
       dockerfile: Dockerfile
     container_name: nt-scada-actuator-producer
     depends_on:
-      kafka:
-        condition: service_healthy  # FIXED: Wait for Kafka to be healthy
+      kafka: # Changed dependency to service_started
+        condition: service_started
     environment:
       KAFKA_BOOTSTRAP_SERVERS: kafka:29092
       PRODUCER_TYPE: actuator
@@ -157,20 +166,18 @@ services:
       - scada-network
     restart: unless-stopped
 
-  # Stream processor with ML models
+# Stream processor (Flink job wrapper)
   stream-processor:
     build:
       context: ./stream
       dockerfile: Dockerfile
     container_name: nt-scada-stream-processor
     depends_on:
-      kafka:
-        condition: service_healthy  # FIXED: Wait for Kafka to be healthy
+      kafka: # Changed dependency to service_started to fix connection issue
+        condition: service_started
       influxdb:
         condition: service_healthy
       flink-jobmanager:
-        condition: service_started
-      batch-analytics:
         condition: service_started
     environment:
       KAFKA_BOOTSTRAP_SERVERS: kafka:29092
@@ -178,21 +185,19 @@ services:
       INFLUXDB_TOKEN: nt-scada-token-secret-key-12345
       INFLUXDB_ORG: nt-scada
       INFLUXDB_BUCKET: scada_data
-    volumes:
-      - ./batch/models:/app/models
     networks:
       - scada-network
     restart: unless-stopped
 
-  # InfluxDB consumer
+# InfluxDB consumer
   influx-consumer:
     build:
       context: ./storage
       dockerfile: Dockerfile
     container_name: nt-scada-influx-consumer
     depends_on:
-      kafka:
-        condition: service_healthy  # FIXED: Wait for Kafka to be healthy
+      kafka: # Changed dependency to service_started to fix connection issue
+        condition: service_started
       influxdb:
         condition: service_healthy
     environment:
@@ -205,7 +210,7 @@ services:
       - scada-network
     restart: unless-stopped
 
-  # Batch analytics (runs periodically)
+# Batch analytics (runs periodically)
   batch-analytics:
     build:
       context: ./batch
