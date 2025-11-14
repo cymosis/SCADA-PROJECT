@@ -1,0 +1,46 @@
+NT-SCADA TESTING METRICS
+========================
+
+TEST 1: NORMAL DATA BASELINE
+-----------------------------
+Dataset: 22June2020 (1).xlsx
+Start Time: ___________
+End Time: ___________
+Duration: ___ minutes
+
+Metrics:
+- Total messages sent: _______
+- Messages processed: _______
+- Anomalies detected: _______
+- Anomaly rate: _______% 
+- Average confidence: _______
+- False positive rate: _______
+- Processing speed: _______ msg/sec
+
+Notes:
+________________
+
+TEST 2: ATTACK DATA DETECTION
+-----------------------------
+Dataset: SWaT_dataset_Jul 19 v2.xlsx
+Start Time: ___________
+End Time: ___________
+Duration: ___ minutes
+
+Metrics:
+- Total messages sent: _______
+- Messages processed: _______
+- Anomalies detected: _______
+- Anomaly rate: _______% 
+- Average confidence: _______
+- True positive rate: _______
+- Processing speed: _______ msg/sec
+
+Notes:
+________________
+
+COMPARISON
+----------
+Detection improvement: _______
+Response time: _______
+System stability: _______

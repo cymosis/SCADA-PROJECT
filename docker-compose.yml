@@ -1,0 +1,308 @@
+version: '3.8'
+
+# NT-SCADA Docker Compose Configuration
+# This file orchestrates all services for the SCADA system
+
+services:
+  # ============================================================================
+  # KAFKA ECOSYSTEM
+  # ============================================================================
+  
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.7.0
+    container_name: zookeeper
+    hostname: zookeeper
+    restart: unless-stopped
+    ports:
+      - "2181:2181"
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+      ZOOKEEPER_LOG4J_ROOT_LOGLEVEL: WARN
+    networks:
+      - scada-network
+    healthcheck:
+      test: ["CMD", "nc", "-z", "localhost", "2181"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  kafka:
+    image: confluentinc/cp-kafka:7.7.0
+    container_name: kafka
+    hostname: kafka
+    restart: unless-stopped
+    depends_on:
+      - zookeeper
+    ports:
+      - "9092:9092"
+      - "9093:9093"
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092,EXTERNAL://0.0.0.0:9093
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092,EXTERNAL://localhost:9093
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,EXTERNAL:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
+      KAFKA_LOG4J_ROOT_LOGLEVEL: WARN
+    networks:
+      - scada-network
+    healthcheck:
+      test: ["CMD", "kafka-broker-api-versions", "--bootstrap-server", "localhost:9092"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  kafka-ui:
+    image: provectuslabs/kafka-ui:latest
+    container_name: kafka-ui
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    environment:
+      KAFKA_CLUSTERS_0_NAME: nt-scada-cluster
+      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:9092
+      KAFKA_CLUSTERS_0_ZOOKEEPER: zookeeper:2181
+      DYNAMIC_CONFIG_ENABLED: "true"
+      LOGGING_LEVEL_ROOT: WARN
+      LOGGING_LEVEL_COM_PROVECTUS: WARN
+    depends_on:
+      - kafka
+      - zookeeper
+    networks:
+      - scada-network
+
+  # ============================================================================
+  # TIME-SERIES DATABASE
+  # ============================================================================
+  
+  influxdb:
+    image: influxdb:1.8
+    container_name: influxdb
+    hostname: influxdb
+    restart: unless-stopped
+    ports:
+      - "8086:8086"
+    environment:
+      INFLUXDB_DB: scada_data
+      INFLUXDB_ADMIN_USER: admin
+      INFLUXDB_ADMIN_PASSWORD: admin123
+      INFLUXDB_HTTP_AUTH_ENABLED: "false"
+      INFLUXDB_REPORTING_DISABLED: "true"
+    volumes:
+      - influxdb_data:/var/lib/influxdb
+    networks:
+      - scada-network
+    healthcheck:
+      test: ["CMD", "influx", "-execute", "SHOW DATABASES"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # ============================================================================
+  # VISUALIZATION
+  # ============================================================================
+  
+  grafana:
+    image: grafana/grafana:10.2.0
+    container_name: grafana
+    hostname: grafana
+    restart: unless-stopped
+    depends_on:
+      - influxdb
+    ports:
+      - "3000:3000"
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: admin
+      GF_INSTALL_PLUGINS: ""
+      GF_LOG_LEVEL: warn
+      GF_USERS_ALLOW_SIGN_UP: "false"
+    volumes:
+      - grafana_data:/var/lib/grafana
+    networks:
+      - scada-network
+
+  # ============================================================================
+  # DATA COLLECTION
+  # ============================================================================
+  
+  telegraf:
+    image: telegraf:1.28
+    container_name: telegraf
+    hostname: telegraf
+    restart: unless-stopped
+    depends_on:
+      - kafka
+      - influxdb
+    environment:
+      HOST_PROC: /host/proc
+      HOST_SYS: /host/sys
+      HOST_ETC: /host/etc
+    volumes:
+      - ./telegraf/telegraf.conf:/etc/telegraf/telegraf.conf:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /etc:/host/etc:ro
+    networks:
+      - scada-network
+
+  # ============================================================================
+  # STREAM PROCESSING (Optional Apache Flink - commented out by default)
+  # ============================================================================
+  
+  # flink-jobmanager:
+  #   image: flink:1.18-scala_2.12
+  #   container_name: flink-jobmanager
+  #   hostname: flink-jobmanager
+  #   command: jobmanager
+  #   restart: unless-stopped
+  #   ports:
+  #     - "8081:8081"
+  #   environment:
+  #     - |
+  #       FLINK_PROPERTIES=
+  #       jobmanager.rpc.address: flink-jobmanager
+  #       taskmanager.numberOfTaskSlots: 2
+  #   networks:
+  #     - scada-network
+
+  # flink-taskmanager:
+  #   image: flink:1.18-scala_2.12
+  #   container_name: flink-taskmanager
+  #   hostname: flink-taskmanager
+  #   depends_on:
+  #     - flink-jobmanager
+  #   command: taskmanager
+  #   restart: unless-stopped
+  #   environment:
+  #     - |
+  #       FLINK_PROPERTIES=
+  #       jobmanager.rpc.address: flink-jobmanager
+  #       taskmanager.numberOfTaskSlots: 2
+  #   networks:
+  #     - scada-network
+
+  # ============================================================================
+  # NT-SCADA PROCESSING SERVICES
+  # ============================================================================
+  
+  # Stream Processor - Real-time anomaly detection
+  stream-processor:
+    image: python:3.9-slim
+    container_name: nt-scada-stream-processor
+    hostname: stream-processor
+    restart: unless-stopped
+    working_dir: /app
+    volumes:
+      - ./stream:/app:ro
+    depends_on:
+      - kafka
+    environment:
+      KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      PYTHONUNBUFFERED: 1
+    command: >
+      sh -c "
+      pip install --no-cache-dir kafka-python numpy scikit-learn joblib &&
+      python stream_processor.py
+      "
+    networks:
+      - scada-network
+
+  # Control Processor - Generates control commands based on anomalies
+  control-processor:
+    image: python:3.9-slim
+    container_name: nt-scada-control-processor
+    hostname: control-processor
+    restart: unless-stopped
+    working_dir: /app
+    volumes:
+      - ./producers:/app:ro
+    depends_on:
+      - kafka
+      - stream-processor
+    environment:
+      KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      PYTHONUNBUFFERED: 1
+    command: >
+      sh -c "
+      pip install --no-cache-dir kafka-python &&
+      python control_producer.py
+      "
+    networks:
+      - scada-network
+
+  # Mock Actuator - Simulates physical actuators
+  mock-actuator:
+    image: python:3.9-slim
+    container_name: nt-scada-mock-actuator
+    hostname: mock-actuator
+    restart: unless-stopped
+    working_dir: /app
+    volumes:
+      - ./actuators:/app:ro
+    depends_on:
+      - kafka
+      - control-processor
+    environment:
+      KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      PYTHONUNBUFFERED: 1
+    command: >
+      sh -c "
+      pip install --no-cache-dir kafka-python &&
+      python mock_actuator.py
+      "
+    networks:
+      - scada-network
+
+  # ============================================================================
+  # OPTIONAL: Sensor Data Producer
+  # Run this manually: docker-compose up -d sensor-producer
+  # Or run locally: python producers/sensor_producer.py
+  # ============================================================================
+  
+  # sensor-producer:
+  #   image: python:3.9-slim
+  #   container_name: nt-scada-sensor-producer
+  #   hostname: sensor-producer
+  #   restart: "no"  # Run once or manually
+  #   working_dir: /app
+  #   volumes:
+  #     - ./producers:/app:ro
+  #     - ./data:/app/data:ro
+  #   depends_on:
+  #     - kafka
+  #   environment:
+  #     KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+  #     PYTHONUNBUFFERED: 1
+  #   command: >
+  #     sh -c "
+  #     pip install --no-cache-dir kafka-python pandas &&
+  #     python sensor_producer.py
+  #     "
+  #   networks:
+  #     - scada-network
+
+# ============================================================================
+# VOLUMES
+# ============================================================================
+
+volumes:
+  influxdb_data:
+    name: nt-scada-influxdb-data
+  grafana_data:
+    name: nt-scada-grafana-data
+
+# ============================================================================
+# NETWORKS
+# ============================================================================
+
+networks:
+  scada-network:
+    name: nt-scada-network
+    driver: bridge

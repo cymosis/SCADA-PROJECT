@@ -1,0 +1,76 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+*.egg-info/
+dist/
+build/
+
+# Jupyter Notebooks
+.ipynb_checkpoints/
+*.ipynb_checkpoints
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Docker
+*.log
+
+# Data Files (Large datasets should not be in Git)
+data/swat/**/*.xlsx
+data/swat/**/*.csv
+data/swat/**/*.xls
+*.pkl
+*.h5
+*.hdf5
+
+# But keep the directory structure
+!data/swat/.gitkeep
+!data/.gitkeep
+
+# InfluxDB & Grafana Data (persisted in Docker volumes)
+influxdb_data/
+grafana_data/
+
+# Logs
+*.log
+logs/
+
+# Temporary files
+*.tmp
+*.temp
+*.bak
+
+# Model files (too large for Git - use Git LFS or external storage)
+models/*.pkl
+stream/*.pkl
+
+# Keep model placeholder
+!models/.gitkeep
+!models/README.md
+
+# Environment variables
+.env
+.env.local
+
+# Test outputs
+test_output/
+*.test
+
+# Coverage reports
+htmlcov/
+.coverage
+.pytest_cache/
