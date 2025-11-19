@@ -6,8 +6,10 @@ WORKDIR /app
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy consumer script
+# Copy consumers
 COPY to_influx.py .
+COPY attack_influx.py .
 
-# Run the consumer
+# Default – normal consumer
 CMD ["python", "to_influx.py"]
+
