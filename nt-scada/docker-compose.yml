@@ -90,6 +90,26 @@ services:
     networks:
       - scada-network
 
+  # MLflow Model Registry
+  mlflow:
+    image: ghcr.io/mlflow/mlflow:v2.9.1
+    container_name: nt-scada-mlflow
+    ports:
+      - "5000:5000"
+    environment:
+      MLFLOW_BACKEND_STORE_URI: sqlite:////mlflow/mlflow.db
+      MLFLOW_DEFAULT_ARTIFACT_ROOT: /mlflow/artifacts
+    volumes:
+      - mlflow-data:/mlflow
+    networks:
+      - scada-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
   # Flink JobManager
   flink-jobmanager:
     image: flink:1.18.0-scala_2.12-java11
@@ -157,27 +177,20 @@ services:
       - scada-network
     restart: unless-stopped
 
-  # Stream processor with ML models
+  # Stream processor with ML models (Production)
   stream-processor:
     build:
       context: ./stream
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile.production
     container_name: nt-scada-stream-processor
     depends_on:
       kafka:
-        condition: service_healthy  # FIXED: Wait for Kafka to be healthy
-      influxdb:
         condition: service_healthy
-      flink-jobmanager:
-        condition: service_started
-      batch-analytics:
-        condition: service_started
+      mlflow:
+        condition: service_healthy
     environment:
       KAFKA_BOOTSTRAP_SERVERS: kafka:29092
-      INFLUXDB_URL: http://influxdb:8086
-      INFLUXDB_TOKEN: nt-scada-token-secret-key-12345
-      INFLUXDB_ORG: nt-scada
-      INFLUXDB_BUCKET: scada_data
+      MLFLOW_URI: http://mlflow:5000
     volumes:
       - ./batch/models:/app/models
     networks:
@@ -214,16 +227,22 @@ services:
     depends_on:
       influxdb:
         condition: service_healthy
+      mlflow:
+        condition: service_healthy
     environment:
       INFLUXDB_URL: http://influxdb:8086
       INFLUXDB_TOKEN: nt-scada-token-secret-key-12345
       INFLUXDB_ORG: nt-scada
       INFLUXDB_BUCKET: scada_data
+      KAFKA_BOOTSTRAP_SERVERS: kafka:29092
+      MLFLOW_URI: http://mlflow:5000
     volumes:
       - ./batch/models:/app/models
+      - ./batch/models/registry:/app/models/registry
       - ./batch/reports:/app/reports
     networks:
       - scada-network
+    restart: unless-stopped
 
 networks:
   scada-network:
@@ -232,4 +251,5 @@ networks:
 volumes:
   influxdb-data:
   grafana-data:
+  mlflow-data:
   flink-checkpoints:
