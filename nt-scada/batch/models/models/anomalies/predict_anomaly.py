@@ -95,13 +95,12 @@ except Exception as e:
 # Real-Time Monitoring Loop
 # -----------------------------
 print("\n=== NT-SCADA Real-Time Anomaly Detection Started ===")
-last_processed_time = datetime.utcnow() - timedelta(minutes=5)
 total_processed = 0
 total_anomalies = 0
 
 try:
     while True:
-        print(f"[LOG] Querying records since {last_processed_time.isoformat()}Z...")
+        print("[LOG] Querying records ")
         query = (
             f'from(bucket: "{INFLUXDB_BUCKET}") '
             f'|> range(start: 0) '
@@ -131,9 +130,7 @@ try:
             numerical_cols = detector.feature_columns
 
             for _, row in sensor_stream.iterrows():
-                row_time = row.get('_time', datetime.utcnow())
-                if isinstance(row_time, str):
-                    row_time = pd.to_datetime(row_time)
+
 
                 row_numeric = row[numerical_cols].apply(pd.to_numeric, errors='coerce').fillna(0)
 
@@ -144,7 +141,7 @@ try:
                     total_anomalies += 1
                     print(f"[ALERT] [{datetime.utcnow().strftime('%H:%M:%S')}] "
                           f"ANOMALY #{total_anomalies} | Prob: {prediction['anomaly_probability']:.2%} | Total: {total_processed}")
-
+                    row_time = datetime.utcnow()
                     point = Point("actuator_data")\
                         .tag("source", "real_time_detection")\
                         .tag("prediction_label", prediction['prediction_label'])\
@@ -166,8 +163,7 @@ try:
                     except Exception as e:
                         print(f"[ERROR] Write error: {e}")
 
-                if isinstance(row_time, datetime) and row_time > last_processed_time:
-                    last_processed_time = row_time
+
 
         except Exception as e:
             print(f"[ERROR] Query error: {e}")
