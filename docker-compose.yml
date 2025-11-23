@@ -184,6 +184,16 @@ services:
         else
           echo "✓ normal_data bucket already exists"
         fi
+
+
+        # Check if anomaly_data bucket exists, create if not
+        if ! influx bucket list --host http://influxdb:8086 --token mytoken --org scada | grep -q "anomaly_data"; then
+          echo "Creating anomaly_data bucket..."
+          influx bucket create --host http://influxdb:8086 --token mytoken --org scada --name anomaly_data
+          echo "✓ anomaly_data bucket created"
+        else
+          echo "✓ anomaly_data bucket already exists"
+        fi
         
         # Check if attack_data bucket exists, create if not
         if ! influx bucket list --host http://influxdb:8086 --token mytoken --org scada | grep -q "attack_data"; then
@@ -196,7 +206,29 @@ services:
         
         echo "All buckets initialized successfully!"
     restart: "no"
-
+  #----------------------------------------------------
+  #ANOMALY
+  #----------------------------------------------------
+  anomaly-detector:
+    build:
+      context: ./nt-scada/batch/models/models/anomalies
+      dockerfile: Dockerfile
+    container_name: anomaly-detector
+    environment:
+      - INFLUXDB_URL=http://influxdb:8086
+      - INFLUXDB_TOKEN=mytoken
+      - INFLUXDB_ORG=scada
+      - INFLUXDB_BUCKET=normal_data
+      - ANOMALY_BUCKET=anomaly_data
+      - POLLING_INTERVAL=5
+      - ANOMALY_THRESHOLD=0.07
+    depends_on:
+      - influxdb
+    networks:
+      - scada-network
+    volumes:
+      - ./nt-scada/batch/models/models/anomalies/models:/app/models  # Mount trained models
+    restart: unless-stopped 
   # ---------------------------------------------------------
   # GRAFANA
   # ---------------------------------------------------------
