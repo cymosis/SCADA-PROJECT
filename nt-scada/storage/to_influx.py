@@ -12,9 +12,9 @@ KAFKA_TOPIC = 'scada.actuators_v2'
 KAFKA_GROUP_ID = 'excel-row-consumer'
 
 INFLUXDB_URL = os.getenv('INFLUXDB_URL', 'http://localhost:8086')
-INFLUXDB_TOKEN = os.getenv('INFLUXDB_TOKEN', 'nt-scada-token-secret-key-12345')
+INFLUXDB_TOKEN = os.getenv('INFLUXDB_TOKEN', 'RazmCJoh77X-O_obg7aovmlsPaLd8R9OjNT1efWnV3IQkpgnmb5ZSRoXTk1LxitRzhtWcaDHDPNDMtqUcfrHsw==')
 INFLUXDB_ORG = os.getenv('INFLUXDB_ORG', 'nt-scada')
-INFLUXDB_BUCKET = os.getenv('INFLUXDB_BUCKET', 'scada_data_v2')
+INFLUXDB_BUCKET = os.getenv('INFLUXDB_BUCKET', 'scada_data')
 
 # -----------------------------
 # Kafka Consumer Setup

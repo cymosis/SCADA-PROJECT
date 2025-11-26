@@ -16,7 +16,7 @@ from kafka.errors import NoBrokersAvailable
 # -----------------------------
 KAFKA_BOOTSTRAP_SERVERS = os.getenv('KAFKA_BOOTSTRAP_SERVERS', 'localhost:9092')
 TOPIC = 'scada.actuators_v2'
-EXCEL_FILE = r'C:/scada-docker/Swat Data/Normal  Data 2023/22June2020 (1).xlsx'
+EXCEL_FILE = "C:/Users/USER/Documents/SCADA PROJECT/SCADA-PROJECT/Swat Data/Normal  Data 2023/22June2020 (1).xlsx"
 STREAM_DELAY = 0.1  # seconds between messages
 CHUNK_SIZE = 1000   # rows per chunk
 

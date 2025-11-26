@@ -12,9 +12,9 @@ KAFKA_TOPIC = 'scada.attacks'
 KAFKA_GROUP_ID = 'attack-row-consumer'
 
 INFLUXDB_URL = os.getenv('INFLUXDB_URL', 'http://localhost:8086')
-INFLUXDB_TOKEN = os.getenv('INFLUXDB_TOKEN', 'nt-scada-token-secret-key-12345')
+INFLUXDB_TOKEN = os.getenv('INFLUXDB_TOKEN', 'my-super-secret-auth-token')
 INFLUXDB_ORG = os.getenv('INFLUXDB_ORG', 'nt-scada')
-INFLUXDB_BUCKET = os.getenv('INFLUXDB_BUCKET', 'attack_scada_data_v2')
+INFLUXDB_BUCKET = os.getenv('INFLUXDB_BUCKET', 'scada_data')
 
 # -----------------------------
 # Kafka Consumer Setup

@@ -21,7 +21,7 @@ warnings.filterwarnings('ignore')
 
 # Configuration
 INFLUXDB_URL = os.getenv('INFLUXDB_URL', 'http://influxdb:8086')
-INFLUXDB_TOKEN = os.getenv('INFLUXDB_TOKEN', 'nt-scada-token-secret-key-12345')
+INFLUXDB_TOKEN = os.getenv('INFLUXDB_TOKEN', 'my-super-secret-auth-token')
 INFLUXDB_ORG = os.getenv('INFLUXDB_ORG', 'nt-scada')
 INFLUXDB_BUCKET = os.getenv('INFLUXDB_BUCKET', 'scada_data')
 
