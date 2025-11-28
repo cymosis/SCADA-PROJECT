@@ -258,5 +258,5 @@ Contributions are welcome! Here's how you can help:
 ---
 
 <p align="center">
-  Built with ❤️ by the NT-SCADA Team
+  We acknowledge using the SWAT data set in this project
 </p>
