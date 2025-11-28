@@ -28,7 +28,7 @@
 
 ## Overview
 
-The aim of the project is to develop a supervisory control and data acquisition platform based on open-source technologies. We implement ingesting, storing, analyzing, and visualizing large volumes of analog and digital inputs collected from the SWaT dataset.
+**The aim of the project is to develop a supervisory control and data acquisition platform based on open-source technologies. We implement ingesting, storing, analyzing, and visualizing large volumes of analog and digital inputs collected from the SWaT dataset.**
 ---
 
 ## System Architecture
