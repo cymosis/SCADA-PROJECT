@@ -94,7 +94,7 @@
             "type": "influxdb",
             "uid": "P951FEA4DE68E13C5"
           },
-          "query": "from(bucket: \"scada_data\")\r\n  |> range(start: 2020-06-22T00:00:00Z, stop: 2020-06-23T00:00:00Z)\r\n  |> filter(fn: (r) => r._measurement == \"actuator_data\")\r\n  |> filter(fn: (r) => r._field == \"AIT201.Pv\")\r\n  |> group()\r\n  |> last()",
+          "query": "from(bucket: \"scada_normal\")\r\n  |> range(start: 2020-06-22T00:00:00Z, stop: 2020-06-23T00:00:00Z)\r\n  |> filter(fn: (r) => r._measurement == \"actuator_data\")\r\n  |> filter(fn: (r) => r._field == \"AIT201.Pv\")\r\n  |> group()\r\n  |> last()",
           "refId": "A"
         }
       ],
@@ -156,7 +156,7 @@
             "type": "influxdb",
             "uid": "P951FEA4DE68E13C5"
           },
-          "query": "from(bucket: \"scada_data\")\r\n  |> range(start: 2020-06-22T00:00:00Z, stop: 2020-06-23T00:00:00Z)\r\n  |> filter(fn: (r) => r._measurement == \"actuator_data\")\r\n  |> filter(fn: (r) => r._field == \"FIT201.Pv\")\r\n  |> group()\r\n  |> last()",
+          "query": "from(bucket: \"scada_normal\")\r\n  |> range(start: 2020-06-22T00:00:00Z, stop: 2020-06-23T00:00:00Z)\r\n  |> filter(fn: (r) => r._measurement == \"actuator_data\")\r\n  |> filter(fn: (r) => r._field == \"FIT201.Pv\")\r\n  |> group()\r\n  |> last()",
           "refId": "A"
         }
       ],
@@ -234,7 +234,7 @@
             "type": "influxdb",
             "uid": "P951FEA4DE68E13C5"
           },
-          "query": "from(bucket: \"scada_data\")\r\n  |> range(start: 2020-06-22T00:00:00Z, stop: 2020-06-23T00:00:00Z)\r\n  |> filter(fn: (r) => r._measurement == \"actuator_data\")\r\n  |> filter(fn: (r) => r._field == \"P201.Status\")\r\n  |> group()\r\n  |> last()",
+          "query": "from(bucket: \"scada_normal\")\r\n  |> range(start: 2020-06-22T00:00:00Z, stop: 2020-06-23T00:00:00Z)\r\n  |> filter(fn: (r) => r._measurement == \"actuator_data\")\r\n  |> filter(fn: (r) => r._field == \"P201.Status\")\r\n  |> group()\r\n  |> last()",
           "refId": "A"
         }
       ],
@@ -301,7 +301,7 @@
             "type": "influxdb",
             "uid": "P951FEA4DE68E13C5"
           },
-          "query": "from(bucket: \"scada_data\")\r\n  |> range(start: 2020-06-22T00:00:00Z, stop: 2020-06-23T00:00:00Z)\r\n  |> filter(fn: (r) => r._measurement == \"actuator_data\")\r\n  |> filter(fn: (r) => r._field =~ /\\.Alarm$/)\r\n  |> limit(n: 50)",
+          "query": "from(bucket: \"scada_normal\")\r\n  |> range(start: 2020-06-22T00:00:00Z, stop: 2020-06-23T00:00:00Z)\r\n  |> filter(fn: (r) => r._measurement == \"actuator_data\")\r\n  |> filter(fn: (r) => r._field =~ /\\.Alarm$/)\r\n  |> limit(n: 50)",
           "refId": "A"
         }
       ],
@@ -392,7 +392,7 @@
             "type": "influxdb",
             "uid": "P951FEA4DE68E13C5"
           },
-          "query": "from(bucket: \"scada_data\")\r\n  |> range(start: 2020-06-22T00:00:00Z, stop: 2020-06-23T00:00:00Z)\r\n  |> filter(fn: (r) => r._measurement == \"actuator_data\")\r\n  |> filter(fn: (r) => r._field == \"MV101.Status\")\r\n  |> group()\r\n  |> last()",
+          "query": "from(bucket: \"scada_normal\")\r\n  |> range(start: 2020-06-22T00:00:00Z, stop: 2020-06-23T00:00:00Z)\r\n  |> filter(fn: (r) => r._measurement == \"actuator_data\")\r\n  |> filter(fn: (r) => r._field == \"MV101.Status\")\r\n  |> group()\r\n  |> last()",
           "refId": "A"
         }
       ],
@@ -470,7 +470,7 @@
             "type": "influxdb",
             "uid": "P951FEA4DE68E13C5"
           },
-          "query": "from(bucket: \"scada_data\")\r\n  |> range(start: 2020-06-22T00:00:00Z, stop: 2020-06-23T00:00:00Z)\r\n  |> filter(fn: (r) => r._measurement == \"actuator_data\")\r\n  |> filter(fn: (r) => r._field == \"P101.Status\")\r\n  |> group()\r\n  |> last()",
+          "query": "from(bucket: \"scada_normal\")\r\n  |> range(start: 2020-06-22T00:00:00Z, stop: 2020-06-23T00:00:00Z)\r\n  |> filter(fn: (r) => r._measurement == \"actuator_data\")\r\n  |> filter(fn: (r) => r._field == \"P101.Status\")\r\n  |> group()\r\n  |> last()",
           "refId": "A"
         }
       ],
@@ -532,7 +532,7 @@
             "type": "influxdb",
             "uid": "P951FEA4DE68E13C5"
           },
-          "query": "from(bucket: \"scada_data\")\r\n  |> range(start: 2020-06-22T00:00:00Z, stop: 2020-06-23T00:00:00Z)\r\n  |> filter(fn: (r) => r._measurement == \"actuator_data\")\r\n  |> filter(fn: (r) => r._field == \"FIT101.Pv\")\r\n  |> group()\r\n  |> last()",
+          "query": "from(bucket: \"scada_normal\")\r\n  |> range(start: 2020-06-22T00:00:00Z, stop: 2020-06-23T00:00:00Z)\r\n  |> filter(fn: (r) => r._measurement == \"actuator_data\")\r\n  |> filter(fn: (r) => r._field == \"FIT101.Pv\")\r\n  |> group()\r\n  |> last()",
           "refId": "A"
         }
       ],
@@ -600,7 +600,7 @@
             "type": "influxdb",
             "uid": "P951FEA4DE68E13C5"
           },
-          "query": "from(bucket: \"scada_data\")\r\n  |> range(start: 2020-06-22T00:00:00Z, stop: 2020-06-23T00:00:00Z)\r\n  |> filter(fn: (r) => r._measurement == \"actuator_data\")\r\n  |> filter(fn: (r) => r._field == \"LIT101.Pv\")\r\n  |> group()\r\n  |> last()",
+          "query": "from(bucket: \"scada_normal\")\r\n  |> range(start: 2020-06-22T00:00:00Z, stop: 2020-06-23T00:00:00Z)\r\n  |> filter(fn: (r) => r._measurement == \"actuator_data\")\r\n  |> filter(fn: (r) => r._field == \"LIT101.Pv\")\r\n  |> group()\r\n  |> last()",
           "refId": "A"
         }
       ],
