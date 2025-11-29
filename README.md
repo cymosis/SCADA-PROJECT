@@ -16,9 +16,9 @@
 
 ## Team Members
 
-1.  **Cynthia Mutisya**
-2.  **Narayan Anshu**
-3.  **Sheillah Khaluvitsi**
+1.  **Narayan Anshu**
+2.  **Sheillah Khaluvitsi**
+3.  **Cynthia Mutisya**
 
 **GitHub Repo**: [https://github.com/cymosis/SCADA-PROJECT](https://github.com/cymosis/SCADA-PROJECT)
 
@@ -28,7 +28,7 @@
 
 ## Overview
 
-**The aim of the project is to develop a supervisory control and data acquisition platform based on open-source technologies. We implement ingesting, storing, analyzing, and visualizing large volumes of analog and digital inputs collected from the SWaT dataset.**
+### The aim of the project is to develop a supervisory control and data acquisition platform based on open-source technologies. We implement ingesting, storing, analyzing, and visualizing large volumes of analog and digital inputs collected from the SWaT dataset.
 ---
 
 ## System Architecture
