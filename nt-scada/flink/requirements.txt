@@ -1,0 +1,32 @@
+# Apache Flink Python Dependencies
+# For real-time SCADA data processing
+
+# Core Flink - Use the correct PyFlink package
+apache-flink==1.17.1
+
+# JSON Processing
+jsonschema
+
+# HTTP requests for InfluxDB
+requests
+
+# Data Validation
+pydantic
+
+# Time Series Processing - Use pre-compiled wheels when possible
+pandas
+numpy
+
+# Machine Learning for Anomaly Detection - This one takes longest to compile
+scikit-learn
+
+# Kafka Python Client for monitoring
+kafka-python
+
+# InfluxDB Client for metrics storage
+influxdb-client
+
+# Logging
+structlog
+# Configuration
+python-dotenv

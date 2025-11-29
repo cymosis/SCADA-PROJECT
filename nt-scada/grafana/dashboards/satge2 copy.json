@@ -1,0 +1,400 @@
+{
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": {
+          "type": "grafana",
+          "uid": "-- Grafana --"
+        },
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      }
+    ]
+  },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 0,
+  "id": 4,
+  "links": [],
+  "panels": [
+    {
+      "datasource": {
+        "uid": "P951FEA4DE68E13C5"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "percentage",
+            "steps": [
+              {
+                "color": "green",
+                "value": 0
+              }
+            ]
+          },
+          "unit": "bool_on_off"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 7,
+        "w": 8,
+        "x": 0,
+        "y": 0
+      },
+      "id": 8,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "horizontal",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "pluginVersion": "12.2.1",
+      "targets": [
+        {
+          "query": "from(bucket: \"normal_data\")\r\n  |> range(start: 0)                       // from the beginning of the bucket\r\n  |> filter(fn: (r) => r._measurement == \"actuator_data\")\r\n  |> filter(fn: (r) => r.P2_STATE == \"2\") // dosing is on\r\n  |> filter(fn: (r) => r._field == \"P202 Status\")\r\n  |> keep(columns: [\"_time\", \"_value\"])    // optional, just cleans the output\r\n  |> last(column: \"_value\")                // nulls are ignored by default",
+          "refId": "A"
+        }
+      ],
+      "title": "DOSING PUMP STATUS",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "uid": "P951FEA4DE68E13C5"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "mappings": [],
+          "thresholds": {
+            "mode": "percentage",
+            "steps": [
+              {
+                "color": "green",
+                "value": 0
+              },
+              {
+                "color": "orange",
+                "value": 70
+              },
+              {
+                "color": "red",
+                "value": 85
+              }
+            ]
+          },
+          "unit": "RATIO"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 7,
+        "w": 8,
+        "x": 8,
+        "y": 0
+      },
+      "id": 5,
+      "options": {
+        "minVizHeight": 75,
+        "minVizWidth": 75,
+        "orientation": "horizontal",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showThresholdLabels": false,
+        "showThresholdMarkers": true,
+        "sizing": "auto"
+      },
+      "pluginVersion": "12.2.1",
+      "targets": [
+        {
+          "query": "from(bucket: \"normal_data\")\r\n  |> range(start: -60)                       // from the beginning of the bucket\r\n  |> filter(fn: (r) => r._measurement == \"actuator_data\")\r\n  |> filter(fn: (r) => r.P2_STATE == \"2\") // only when pump P1 is ON\r\n  |> filter(fn: (r) => r._field == \"FIT 201\")\r\n  |> keep(columns: [\"_time\", \"_value\"])    // optional, just cleans the output\r\n  |> mean(column: \"_value\")                // nulls are ignored by default",
+          "refId": "A"
+        }
+      ],
+      "title": "RAW WATER TO DOSAGE FEED TANK",
+      "type": "gauge"
+    },
+    {
+      "datasource": {
+        "uid": "P951FEA4DE68E13C5"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "mappings": [],
+          "thresholds": {
+            "mode": "percentage",
+            "steps": [
+              {
+                "color": "green",
+                "value": 0
+              },
+              {
+                "color": "orange",
+                "value": 70
+              },
+              {
+                "color": "red",
+                "value": 85
+              }
+            ]
+          },
+          "unit": "µs/cm"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 7,
+        "w": 8,
+        "x": 16,
+        "y": 0
+      },
+      "id": 7,
+      "options": {
+        "minVizHeight": 75,
+        "minVizWidth": 75,
+        "orientation": "horizontal",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showThresholdLabels": false,
+        "showThresholdMarkers": true,
+        "sizing": "auto"
+      },
+      "pluginVersion": "12.2.1",
+      "targets": [
+        {
+          "query": "from(bucket: \"normal_data\")\r\n  |> range(start: 0)                       // from the beginning of the bucket\r\n  |> filter(fn: (r) => r._measurement == \"actuator_data\")\r\n  |> filter(fn: (r) => r.P2_STATE == \"2\") // only when pump P1 is ON\r\n  |> filter(fn: (r) => r._field == \"AIT 201\")\r\n  |> keep(columns: [\"_time\", \"_value\"])    // optional, just cleans the output\r\n  |> mean(column: \"_value\")                // nulls are ignored by default",
+          "refId": "A"
+        }
+      ],
+      "title": "AIT CONDUCTIVITY",
+      "type": "gauge"
+    },
+    {
+      "datasource": {
+        "uid": "P951FEA4DE68E13C5"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "percentage",
+            "steps": [
+              {
+                "color": "green",
+                "value": 0
+              }
+            ]
+          },
+          "unit": "bool_on_off"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 7,
+        "w": 8,
+        "x": 0,
+        "y": 7
+      },
+      "id": 10,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "horizontal",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "pluginVersion": "12.2.1",
+      "targets": [
+        {
+          "query": "from(bucket: \"normal_data\")\r\n  |> range(start: 0)                       // from the beginning of the bucket\r\n  |> filter(fn: (r) => r._measurement == \"actuator_data\")\r\n  |> filter(fn: (r) => r.P2_STATE == \"2\") // dosing is on\r\n  |> filter(fn: (r) => r._field == \"MV201\")\r\n  |> keep(columns: [\"_time\", \"_value\"])    // optional, just cleans the output\r\n  |> last(column: \"_value\")                // nulls are ignored by default",
+          "refId": "A"
+        }
+      ],
+      "title": "RAW WATER TANK VALVE OUTLET",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "uid": "P951FEA4DE68E13C5"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": 0
+              },
+              {
+                "color": "dark-red",
+                "value": 800
+              }
+            ]
+          },
+          "unit": "mvolt"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 7,
+        "w": 8,
+        "x": 8,
+        "y": 7
+      },
+      "id": 6,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "horizontal",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "pluginVersion": "12.2.1",
+      "targets": [
+        {
+          "query": "from(bucket: \"normal_data\")\r\n  |> range(start: 0)                       // from the beginning of the bucket\r\n  |> filter(fn: (r) => r._measurement == \"actuator_data\")\r\n  |> filter(fn: (r) => r.P2_STATE == \"2\") // only when pump P1 is ON\r\n  |> filter(fn: (r) => r._field == \"AIT 203\")\r\n  |> keep(columns: [\"_time\", \"_value\"])    // optional, just cleans the output\r\n  |> mean(column: \"_value\")                // nulls are ignored by default",
+          "refId": "A"
+        }
+      ],
+      "title": "ORP LEVEL",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "uid": "P951FEA4DE68E13C5"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": 0
+              },
+              {
+                "color": "dark-red",
+                "value": 14
+              }
+            ]
+          },
+          "unit": "pH"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 7,
+        "w": 8,
+        "x": 16,
+        "y": 7
+      },
+      "id": 9,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "horizontal",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "pluginVersion": "12.2.1",
+      "targets": [
+        {
+          "query": "from(bucket: \"normal_data\")\r\n  |> range(start: 0)                       // from the beginning of the bucket\r\n  |> filter(fn: (r) => r._measurement == \"actuator_data\")\r\n  |> filter(fn: (r) => r.P2_STATE == \"2\") // only when pump P1 is ON\r\n  |> filter(fn: (r) => r._field == \"AIT 202\")\r\n  |> keep(columns: [\"_time\", \"_value\"])    // optional, just cleans the output\r\n  |> mean(column: \"_value\")                // nulls are ignored by default",
+          "refId": "A"
+        }
+      ],
+      "title": "PHL LEVEL",
+      "type": "stat"
+    }
+  ],
+  "preload": false,
+  "refresh": "auto",
+  "schemaVersion": 42,
+  "tags": [
+    "Industrial",
+    "Stage 2 - Chemical Dosing"
+  ],
+  "templating": {
+    "list": []
+  },
+  "time": {
+    "from": "2020-06-22T09:57:21.707Z",
+    "to": "2020-06-22T10:08:22.997Z"
+  },
+  "timepicker": {},
+  "timezone": "browser",
+  "title": "NT-SCADA Equipment Monitoring- STAGE 2 - CHEMICAL WATER DOSING",
+  "uid": "nt-scada-main_2",
+  "version": 2
+}
