@@ -56,6 +56,9 @@ class AnomalyDetector:
         anomaly_prob = proba[1] if len(proba) > 1 else proba[0]
 
         print(f"[LOG] Prediction: {pred}, Probability: {anomaly_prob:.2%}")
+        #contributing feature
+
+    
 
         return {
             'timestamp': datetime.utcnow().isoformat() + 'Z',

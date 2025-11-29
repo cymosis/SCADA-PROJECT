@@ -1,0 +1,86 @@
+================================================================================
+NT-SCADA Feature-Level Anomaly Detection - Training Report
+================================================================================
+Training Date: 2025-11-29 09:34:17
+Total Features Analyzed: 11
+
+================================================================================
+Feature Performance Summary:
+================================================================================
+
+AIT 402:
+  Anomaly Rate: 0.0201
+  Random Forest Accuracy: 1.0000
+  Random Forest F1-Score: 1.0000
+  Isolation Forest Accuracy: 1.0000
+  Isolation Forest F1-Score: 1.0000
+
+AIT 502:
+  Anomaly Rate: 0.0482
+  Random Forest Accuracy: 1.0000
+  Random Forest F1-Score: 1.0000
+  Isolation Forest Accuracy: 0.9133
+  Isolation Forest F1-Score: 0.9161
+
+AIT 504:
+  Anomaly Rate: 0.0201
+  Random Forest Accuracy: 1.0000
+  Random Forest F1-Score: 1.0000
+  Isolation Forest Accuracy: 1.0000
+  Isolation Forest F1-Score: 1.0000
+
+FIT 601:
+  Anomaly Rate: 0.0502
+  Random Forest Accuracy: 0.9933
+  Random Forest F1-Score: 0.9935
+  Isolation Forest Accuracy: 0.9667
+  Isolation Forest F1-Score: 0.9691
+
+LIT 301:
+  Anomaly Rate: 0.0261
+  Random Forest Accuracy: 1.0000
+  Random Forest F1-Score: 1.0000
+  Isolation Forest Accuracy: 1.0000
+  Isolation Forest F1-Score: 1.0000
+
+MV 301:
+  Anomaly Rate: 0.1084
+  Random Forest Accuracy: 1.0000
+  Random Forest F1-Score: 1.0000
+  Isolation Forest Accuracy: 1.0000
+  Isolation Forest F1-Score: 1.0000
+
+MV 303:
+  Anomaly Rate: 0.0361
+  Random Forest Accuracy: 1.0000
+  Random Forest F1-Score: 1.0000
+  Isolation Forest Accuracy: 1.0000
+  Isolation Forest F1-Score: 1.0000
+
+MV 501:
+  Anomaly Rate: 0.0361
+  Random Forest Accuracy: 1.0000
+  Random Forest F1-Score: 1.0000
+  Isolation Forest Accuracy: 1.0000
+  Isolation Forest F1-Score: 1.0000
+
+MV 502:
+  Anomaly Rate: 0.0442
+  Random Forest Accuracy: 1.0000
+  Random Forest F1-Score: 1.0000
+  Isolation Forest Accuracy: 1.0000
+  Isolation Forest F1-Score: 1.0000
+
+P601 Status:
+  Anomaly Rate: 0.1124
+  Random Forest Accuracy: 1.0000
+  Random Forest F1-Score: 1.0000
+  Isolation Forest Accuracy: 1.0000
+  Isolation Forest F1-Score: 1.0000
+
+P602 Status:
+  Anomaly Rate: 0.0422
+  Random Forest Accuracy: 1.0000
+  Random Forest F1-Score: 1.0000
+  Isolation Forest Accuracy: 1.0000
+  Isolation Forest F1-Score: 1.0000

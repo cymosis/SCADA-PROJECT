@@ -23,6 +23,9 @@ scikit-learn
 # Kafka Python Client for monitoring
 kafka-python
 
+# InfluxDB Client for metrics storage
+influxdb-client
+
 # Logging
 structlog
 # Configuration

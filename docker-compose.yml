@@ -176,19 +176,47 @@ services:
         done
         echo "InfluxDB is ready!"
         
-        # Create buckets if they don't exist
-        for bucket in normal_data anomaly_data attack_data kafka_analytics; do
-          if ! influx bucket list --host http://influxdb:8086 --token mytoken --org scada | grep -q "$bucket"; then
-            influx bucket create --host http://influxdb:8086 --token mytoken --org scada --name "$bucket"
-            echo "✓ $bucket created"
-          else
-            echo "✓ $bucket already exists"
-          fi
-        done
+        # Check if normal_data bucket exists, create if not
+        if ! influx bucket list --host http://influxdb:8086 --token mytoken --org scada | grep -q "normal_data"; then
+          echo "Creating normal_data bucket..."
+          influx bucket create --host http://influxdb:8086 --token mytoken --org scada --name normal_data
+          echo "✓ normal_data bucket created"
+        else
+          echo "✓ normal_data bucket already exists"
+        fi
+
+
+        # Check if anomaly_data bucket exists, create if not
+        if ! influx bucket list --host http://influxdb:8086 --token mytoken --org scada | grep -q "anomaly_data"; then
+          echo "Creating anomaly_data bucket..."
+          influx bucket create --host http://influxdb:8086 --token mytoken --org scada --name anomaly_data
+          echo "✓ anomaly_data bucket created"
+        else
+          echo "✓ anomaly_data bucket already exists"
+        fi
+
+        # Check if kafka_analytics bucket exists, create if not
+        if ! influx bucket list --host http://influxdb:8086 --token mytoken --org scada | grep -q "kafka_analytics"; then
+          echo "Creating kafka_analytics bucket..."
+          influx bucket create --host http://influxdb:8086 --token mytoken --org scada --name kafka_analytics
+          echo "✓ kafka_analytics bucket created"
+        else
+          echo "✓ kafka_analytics bucket already exists"
+        fi
+        
+        # Check if attack_data bucket exists, create if not
+        if ! influx bucket list --host http://influxdb:8086 --token mytoken --org scada | grep -q "attack_data"; then
+          echo "Creating attack_data bucket..."
+          influx bucket create --host http://influxdb:8086 --token mytoken --org scada --name attack_data
+          echo "✓ attack_data bucket created"
+        else
+          echo "✓ attack_data bucket already exists"
+        fi
+        
         echo "All buckets initialized successfully!"
     restart: "no"
 
-  # ---------------------------------------------------------
+  #----------------------------------------------------
   # ANOMALY DETECTOR
   # ---------------------------------------------------------
   anomaly-detector:

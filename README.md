@@ -155,7 +155,7 @@
 
 ---
 
-## 🖥 Service Dashboard
+## Service Dashboard
 
 Access the various components of the system using the following credentials:
 
