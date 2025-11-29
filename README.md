@@ -14,7 +14,7 @@
 
 ---
 
-## 👥 Team Members
+## Team Members
 
 1.  **Cynthia Mutisya**
 2.  **Narayan Anshu**
@@ -24,28 +24,28 @@
 
 ---
 
-## 📖 Table of Contents
+## Table of Contents
 
-- [Overview](#-overview)
-- [System Architecture](#-system-architecture)
-- [Key Technologies](#-key-technologies)
-- [Features](#-features)
-- [Work Plan & Phases](#-work-plan--phases)
-- [Getting Started](#-getting-started)
-- [Service Dashboard](#-service-dashboard)
-- [Project Structure](#-project-structure)
-- [Additional Documentation](#-additional-documentation)
-- [Troubleshooting](#-troubleshooting)
-- [Contributing](#-contributing)
-- [License](#-license)
+- [Overview](#overview)
+- [System Architecture](#system-architecture)
+- [Key Technologies](#key-technologies)
+- [Features](#features)
+- [Work Plan & Phases](#work-plan--phases)
+- [Getting Started](#getting-started)
+- [Service Dashboard](#service-dashboard)
+- [Project Structure](#project-structure)
+- [Additional Documentation](#additional-documentation)
+- [Troubleshooting](#troubleshooting)
+- [Contributing](#contributing)
+- [License](#license)
 
 ---
 
-## 🔭 Overview
+## Overview
 
 The aim of the project is to develop a supervisory control and data acquisition platform based on open-source technologies. We implement ingesting, storing, analyzing, and visualizing large volumes of analog and digital inputs collected from sensors. We also add support for handling analog and digital outputs sent from the SCADA to actuators (e.g., breakers, valves, and other equipment which turns electric signals into physical actions).
 
-### 🎯 Use Cases
+### Use Cases
 
 - **Industrial IoT Monitoring**: Real-time monitoring of manufacturing processes and equipment
 - **Predictive Maintenance**: Detect equipment failures before they occur using ML models
@@ -56,7 +56,7 @@ The aim of the project is to develop a supervisory control and data acquisition 
 
 ---
 
-## 🏗 System Architecture
+## System Architecture
 
 The proposed architecture leverages Kubernetes for orchestration and a robust pipeline for data processing.
 
@@ -94,18 +94,6 @@ graph TD
         G -->|Control Commands| K
         K -->|Execute| A[Actuators]
     end
-```
-
-### Component Details
-
-1.  **Data Sources**:
-    *   **Industrial Sensors**: These represent the real-world analog and digital inputs (e.g., temperature, pressure, flow, switch states) that a traditional SCADA system would monitor. In this project, we will be simulating or using datasets that represent these.
-    *   **Actuators**: These are the physical devices (valves, breakers, motors, pumps) that the SCADA system controls based on analysis and user commands. They receive analog or digital output signals.
-    *   **SWaT & Other Datasets**: These provide the historical sensor and actuator data needed for training our batch models and initially testing your streaming pipelines. In simulation mode, a Kafka Producer reads the dataset and streams it line-by-line to simulate a live data feed.
-
-2.  **Data Ingestion & Messaging**:
-    *   **Apache Kafka**: This is the backbone for real-time data ingestion.
-        *   **Purpose**: It acts as a highly scalable, fault-tolerant, and high-throughput distributed streaming platform. Sensors (or simulated sensor data) publish their readings to Kafka topics. Actuator commands from the SCADA interface are also published to Kafka topics to be consumed by the actuators.
 
 3.  **Data Processing**:
     *   **Apache Flink**: This will be the primary engine for both stream processing and batch processing.
@@ -133,7 +121,7 @@ graph TD
 
 ---
 
-## � Key Technologies
+## Key Technologies
 
 | Technology | Version | Purpose |
 |-----------|---------|---------|
@@ -149,7 +137,7 @@ graph TD
 
 ---
 
-## ✨ Features
+## Features
 
 ### Real-time Data Processing
 - **High-throughput Ingestion**: Kafka handles thousands of sensor readings per second
@@ -183,7 +171,7 @@ graph TD
 
 ---
 
-## �📅 Work Plan & Phases
+## Work Plan & Phases
 
 We plan to implement the project in phases as described below. We have not defined roles for each team member yet since it will be more of teamwork.
 
@@ -210,7 +198,7 @@ We plan to implement the project in phases as described below. We have not defin
 
 ---
 
-## ⚡ Getting Started (Local Docker Version)
+## Getting Started (Local Docker Version)
 
 *Note: While the target architecture uses Kubernetes, this repository currently includes a Docker Compose setup for easy local development.*
 
@@ -240,7 +228,7 @@ We plan to implement the project in phases as described below. We have not defin
 
 ---
 
-## 🖥 Service Dashboard
+## Service Dashboard
 
 Access the various components of the system using the following credentials:
 
@@ -255,7 +243,7 @@ Access the various components of the system using the following credentials:
 
 ---
 
-## 📂 Project Structure
+## Project Structure
 
 ```text
 SCADA-PROJECT/
@@ -273,7 +261,7 @@ SCADA-PROJECT/
 
 ---
 
-## 🔧 Troubleshooting
+## Troubleshooting
 
 ### Common Issues
 
@@ -295,7 +283,7 @@ SCADA-PROJECT/
 
 ---
 
-## � Additional Documentation
+## Additional Documentation
 
 For more detailed information, please refer to the following documentation files in the `nt-scada/` directory:
 
@@ -308,7 +296,7 @@ For more detailed information, please refer to the following documentation files
 
 ---
 
-## 🤝 Contributing
+## Contributing
 
 Contributions are welcome! Here's how you can help:
 
@@ -343,21 +331,19 @@ Contributions are welcome! Here's how you can help:
    - Ensure all tests pass
 
 ### Areas for Contribution
-- 🐛 **Bug Fixes**: Help identify and fix issues
-- ✨ **New Features**: Add new functionality or components
-- 📝 **Documentation**: Improve or expand documentation
-- 🧪 **Testing**: Add or improve test coverage
-- 🎨 **UI/UX**: Enhance Grafana dashboards and visualizations
-- ⚡ **Performance**: Optimize processing pipelines
+- **Bug Fixes**: Help identify and fix issues
+- **New Features**: Add new functionality or components
+- **Documentation**: Improve or expand documentation
+- **Testing**: Add or improve test coverage
+- **UI/UX**: Enhance Grafana dashboards and visualizations
+- **Performance**: Optimize processing pipelines
 
 ---
 
-## �📄 License
+## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 ---
 
-<p align="center">
-  Built with ❤️ by the NT-SCADA Team
-</p>
+
