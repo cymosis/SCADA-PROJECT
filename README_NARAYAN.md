@@ -28,10 +28,12 @@ This document outlines the specific contributions and technical implementations 
     - SAX symbol conversion and window buffering.
 - **Verification**: Ensured all components are robust and bug-free.
 
-#### 4. Project Maintenance & DevOps
-- **Documentation**: Refactored the main `README.md` to adhere to professional standards (removed informal emojis, standardized formatting).
-- **Version Control**: Created and configured `.gitignore` to ensure a clean repository by excluding Python cache and environment files.
-- **Dependency Management**: Updated `requirements.txt` to include necessary analytics (`river`) and testing (`pytest`) libraries.
+#### 4. Open Source Technology Integration & DevOps
+- **Open Source Libraries**:
+    - **River**: Integrated the `river` library for online machine learning and concept drift detection.
+    - **Pytest**: Integrated the `pytest` framework for robust unit testing.
+- **Documentation**: Refactored the main `README.md` to adhere to professional standards.
+- **Version Control**: Created and configured `.gitignore` to ensure a clean repository.
 
 ---
 
