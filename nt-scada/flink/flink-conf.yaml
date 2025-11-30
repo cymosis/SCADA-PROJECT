@@ -1,0 +1,4 @@
+jobmanager.rpc.address: flink-jobmanager
+jobmanager.rpc.port: 6123
+taskmanager.numberOfTaskSlots: 4
+parallelism.default: 1

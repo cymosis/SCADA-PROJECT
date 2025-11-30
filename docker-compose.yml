@@ -1,3 +1,13 @@
+networks:
+  scada-network:
+
+volumes:
+  influxdb_data:
+  grafana_data:
+
+
+
+
 services:
   # ---------------------------------------------------------
   # ZOOKEEPER
@@ -240,19 +250,22 @@ services:
       - ./nt-scada/batch/models/models/anomalies/models:/app/models
     restart: unless-stopped 
 
-  # ---------------------------------------------------------
-  # FLINK JOBMANAGER
-  # ---------------------------------------------------------
+# ---------------------------------------------------------
+# FLINK JOBMANAGER
+# ---------------------------------------------------------
   flink-jobmanager:
     build:
       context: ./nt-scada/flink
       dockerfile: Dockerfile
     container_name: flink-jobmanager
+    hostname: flink-jobmanager
     ports:
-      - "8081:8081"
-      - "6123:6123"
+      - "8081:8081"   # Flink Web Dashboard
+      - "6123:6123"   # RPC port for TaskManagers
     environment:
-      FLINK_PROPERTIES: jobmanager.rpc.address:flink-jobmanager
+      FLINK_PROPERTIES: |
+        jobmanager.rpc.address: flink-jobmanager
+        taskmanager.numberOfTaskSlots: 4
     command: jobmanager
     networks:
       - scada-network
@@ -260,9 +273,9 @@ services:
     volumes:
       - ./nt-scada/flink/jobs:/opt/flink/jobs
 
-  # ---------------------------------------------------------
-  # FLINK TASKMANAGER
-  # ---------------------------------------------------------
+# ---------------------------------------------------------
+# FLINK TASKMANAGER
+# ---------------------------------------------------------
   flink-taskmanager:
     build:
       context: ./nt-scada/flink
@@ -271,16 +284,19 @@ services:
     depends_on:
       - flink-jobmanager
     environment:
-      FLINK_PROPERTIES: jobmanager.rpc.address:flink-jobmanager
+      FLINK_PROPERTIES: |
+        jobmanager.rpc.address: flink-jobmanager
       TASK_MANAGER_NUMBER_OF_TASK_SLOTS: "4"
     command: taskmanager
     networks:
       - scada-network
     restart: unless-stopped
+    volumes:
+      - ./nt-scada/flink/jobs:/opt/flink/jobs
 
-  # ---------------------------------------------------------
-  # FLINK JOB SUBMISSION SERVICE
-  # ---------------------------------------------------------
+# ---------------------------------------------------------
+# FLINK JOB SUBMISSION SERVICE
+# ---------------------------------------------------------
   flink-job-submitter:
     build:
       context: ./nt-scada/flink
@@ -296,12 +312,14 @@ services:
       INFLUXDB_ORG: scada
       INFLUXDB_BUCKET: kafka_analytics
       KAFKA_BOOTSTRAP_SERVERS: kafka:29092
+      FLINK_REST_URL: http://flink-jobmanager:8081
     networks:
       - scada-network
     volumes:
       - ./nt-scada/flink/jobs:/opt/flink/jobs
     restart: unless-stopped
-    command: ["python3", "/opt/flink/jobs/submit_job.py"]
+    entrypoint: ["python3", "/opt/flink/jobs/submit_job.py"]
+
 
   # ---------------------------------------------------------
   # REAL-TIME ANALYTICS TIMER
@@ -349,9 +367,3 @@ services:
 # ---------------------------------------------------------
 # NETWORK + VOLUMES
 # ---------------------------------------------------------
-networks:
-  scada-network:
-
-volumes:
-  influxdb_data:
-  grafana_data:

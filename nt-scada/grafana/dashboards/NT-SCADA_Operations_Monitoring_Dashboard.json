@@ -18,9 +18,8 @@
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 0,
-  "id": 2,
+  "id": 5,
   "links": [],
-  "liveNow": false,
   "panels": [
     {
       "collapsed": false,
@@ -51,7 +50,7 @@
             "steps": [
               {
                 "color": "red",
-                "value": null
+                "value": 0
               },
               {
                 "color": "green",
@@ -85,16 +84,17 @@
           "values": false
         },
         "showThresholdLabels": false,
-        "showThresholdMarkers": true
+        "showThresholdMarkers": true,
+        "sizing": "auto"
       },
-      "pluginVersion": "10.2.0",
+      "pluginVersion": "12.2.1",
       "targets": [
         {
           "datasource": {
             "type": "influxdb",
             "uid": "P951FEA4DE68E13C5"
           },
-          "query": "from(bucket: \"scada_normal\")\r\n  |> range(start: 2020-06-22T00:00:00Z, stop: 2020-06-23T00:00:00Z)\r\n  |> filter(fn: (r) => r._measurement == \"actuator_data\")\r\n  |> filter(fn: (r) => r._field == \"AIT201.Pv\")\r\n  |> group()\r\n  |> last()",
+          "query": "from(bucket: \"normal_data\")\r\n  |> range(start: 0)\r\n  |> filter(fn: (r) => r._measurement == \"actuator_data\")\r\n  |> filter(fn: (r) => r._field == \"AIT 201\")\r\n  |> group()\r\n  |> last()",
           "refId": "A"
         }
       ],
@@ -117,7 +117,7 @@
             "steps": [
               {
                 "color": "green",
-                "value": null
+                "value": 0
               },
               {
                 "color": "red",
@@ -140,6 +140,7 @@
         "graphMode": "area",
         "justifyMode": "auto",
         "orientation": "auto",
+        "percentChangeColorMode": "standard",
         "reduceOptions": {
           "calcs": [
             "lastNotNull"
@@ -147,16 +148,18 @@
           "fields": "",
           "values": false
         },
-        "textMode": "auto"
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
       },
-      "pluginVersion": "10.2.0",
+      "pluginVersion": "12.2.1",
       "targets": [
         {
           "datasource": {
             "type": "influxdb",
             "uid": "P951FEA4DE68E13C5"
           },
-          "query": "from(bucket: \"scada_normal\")\r\n  |> range(start: 2020-06-22T00:00:00Z, stop: 2020-06-23T00:00:00Z)\r\n  |> filter(fn: (r) => r._measurement == \"actuator_data\")\r\n  |> filter(fn: (r) => r._field == \"FIT201.Pv\")\r\n  |> group()\r\n  |> last()",
+          "query": "from(bucket: \"normal_data\")\r\n  |> range(start: 2020-06-22T00:00:00Z, stop: 2020-06-23T00:00:00Z)\r\n  |> filter(fn: (r) => r._measurement == \"actuator_data\")\r\n  |> filter(fn: (r) => r._field == \"FIT 201\")\r\n  |> group()\r\n  |> last()",
           "refId": "A"
         }
       ],
@@ -195,7 +198,7 @@
             "steps": [
               {
                 "color": "green",
-                "value": null
+                "value": 0
               },
               {
                 "color": "red",
@@ -218,6 +221,7 @@
         "graphMode": "area",
         "justifyMode": "auto",
         "orientation": "auto",
+        "percentChangeColorMode": "standard",
         "reduceOptions": {
           "calcs": [
             "lastNotNull"
@@ -225,16 +229,18 @@
           "fields": "",
           "values": false
         },
-        "textMode": "auto"
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
       },
-      "pluginVersion": "10.2.0",
+      "pluginVersion": "12.2.1",
       "targets": [
         {
           "datasource": {
             "type": "influxdb",
             "uid": "P951FEA4DE68E13C5"
           },
-          "query": "from(bucket: \"scada_normal\")\r\n  |> range(start: 2020-06-22T00:00:00Z, stop: 2020-06-23T00:00:00Z)\r\n  |> filter(fn: (r) => r._measurement == \"actuator_data\")\r\n  |> filter(fn: (r) => r._field == \"P201.Status\")\r\n  |> group()\r\n  |> last()",
+          "query": "from(bucket: \"normal_data\")\r\n  |> range(start: 2020-06-22T00:00:00Z, stop: 2020-06-23T00:00:00Z)\r\n  |> filter(fn: (r) => r._measurement == \"actuator_data\")\r\n  |> filter(fn: (r) => r._field == \"P201 Status\")\r\n  |> group()\r\n  |> last()",
           "refId": "A"
         }
       ],
@@ -256,6 +262,9 @@
             "cellOptions": {
               "type": "auto"
             },
+            "footer": {
+              "reducers": []
+            },
             "inspect": false
           },
           "mappings": [],
@@ -264,7 +273,7 @@
             "steps": [
               {
                 "color": "green",
-                "value": null
+                "value": 0
               },
               {
                 "color": "red",
@@ -284,24 +293,16 @@
       "id": 8,
       "options": {
         "cellHeight": "sm",
-        "footer": {
-          "countRows": false,
-          "fields": "",
-          "reducer": [
-            "sum"
-          ],
-          "show": false
-        },
         "showHeader": true
       },
-      "pluginVersion": "10.2.0",
+      "pluginVersion": "12.2.1",
       "targets": [
         {
           "datasource": {
             "type": "influxdb",
             "uid": "P951FEA4DE68E13C5"
           },
-          "query": "from(bucket: \"scada_normal\")\r\n  |> range(start: 2020-06-22T00:00:00Z, stop: 2020-06-23T00:00:00Z)\r\n  |> filter(fn: (r) => r._measurement == \"actuator_data\")\r\n  |> filter(fn: (r) => r._field =~ /\\.Alarm$/)\r\n  |> limit(n: 50)",
+          "query": "from(bucket: \"normal_data\")\r\n  |> range(start: 2020-06-22T00:00:00Z, stop: 2020-06-23T00:00:00Z)\r\n  |> filter(fn: (r) => r._measurement == \"actuator_data\")\r\n  |> filter(fn: (r) => r._field =~ /\\.Alarm$/)\r\n  |> limit(n: 50)",
           "refId": "A"
         }
       ],
@@ -353,7 +354,7 @@
             "steps": [
               {
                 "color": "green",
-                "value": null
+                "value": 0
               },
               {
                 "color": "red",
@@ -376,6 +377,7 @@
         "graphMode": "area",
         "justifyMode": "auto",
         "orientation": "auto",
+        "percentChangeColorMode": "standard",
         "reduceOptions": {
           "calcs": [
             "lastNotNull"
@@ -383,16 +385,18 @@
           "fields": "",
           "values": false
         },
-        "textMode": "auto"
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
       },
-      "pluginVersion": "10.2.0",
+      "pluginVersion": "12.2.1",
       "targets": [
         {
           "datasource": {
             "type": "influxdb",
             "uid": "P951FEA4DE68E13C5"
           },
-          "query": "from(bucket: \"scada_normal\")\r\n  |> range(start: 2020-06-22T00:00:00Z, stop: 2020-06-23T00:00:00Z)\r\n  |> filter(fn: (r) => r._measurement == \"actuator_data\")\r\n  |> filter(fn: (r) => r._field == \"MV101.Status\")\r\n  |> group()\r\n  |> last()",
+          "query": "from(bucket: \"normal_data\")\r\n  |> range(start: 2020-06-22T00:00:00Z, stop: 2020-06-23T00:00:00Z)\r\n  |> filter(fn: (r) => r._measurement == \"actuator_data\")\r\n  |> filter(fn: (r) => r._field == \"MV 101\")\r\n  |> group()\r\n  |> last()",
           "refId": "A"
         }
       ],
@@ -431,7 +435,7 @@
             "steps": [
               {
                 "color": "green",
-                "value": null
+                "value": 0
               },
               {
                 "color": "red",
@@ -454,6 +458,7 @@
         "graphMode": "area",
         "justifyMode": "auto",
         "orientation": "auto",
+        "percentChangeColorMode": "standard",
         "reduceOptions": {
           "calcs": [
             "lastNotNull"
@@ -461,16 +466,18 @@
           "fields": "",
           "values": false
         },
-        "textMode": "auto"
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
       },
-      "pluginVersion": "10.2.0",
+      "pluginVersion": "12.2.1",
       "targets": [
         {
           "datasource": {
             "type": "influxdb",
             "uid": "P951FEA4DE68E13C5"
           },
-          "query": "from(bucket: \"scada_normal\")\r\n  |> range(start: 2020-06-22T00:00:00Z, stop: 2020-06-23T00:00:00Z)\r\n  |> filter(fn: (r) => r._measurement == \"actuator_data\")\r\n  |> filter(fn: (r) => r._field == \"P101.Status\")\r\n  |> group()\r\n  |> last()",
+          "query": "from(bucket: \"normal_data\")\r\n  |> range(start: 2020-06-22T00:00:00Z, stop: 2020-06-23T00:00:00Z)\r\n  |> filter(fn: (r) => r._measurement == \"actuator_data\")\r\n  |> filter(fn: (r) => r._field == \"P101 Status\")\r\n  |> group()\r\n  |> last()",
           "refId": "A"
         }
       ],
@@ -493,7 +500,7 @@
             "steps": [
               {
                 "color": "green",
-                "value": null
+                "value": 0
               },
               {
                 "color": "red",
@@ -516,6 +523,7 @@
         "graphMode": "area",
         "justifyMode": "auto",
         "orientation": "auto",
+        "percentChangeColorMode": "standard",
         "reduceOptions": {
           "calcs": [
             "lastNotNull"
@@ -523,16 +531,18 @@
           "fields": "",
           "values": false
         },
-        "textMode": "auto"
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
       },
-      "pluginVersion": "10.2.0",
+      "pluginVersion": "12.2.1",
       "targets": [
         {
           "datasource": {
             "type": "influxdb",
             "uid": "P951FEA4DE68E13C5"
           },
-          "query": "from(bucket: \"scada_normal\")\r\n  |> range(start: 2020-06-22T00:00:00Z, stop: 2020-06-23T00:00:00Z)\r\n  |> filter(fn: (r) => r._measurement == \"actuator_data\")\r\n  |> filter(fn: (r) => r._field == \"FIT101.Pv\")\r\n  |> group()\r\n  |> last()",
+          "query": "from(bucket: \"normal_data\")\r\n  |> range(start: 2020-06-22T00:00:00Z, stop: 2020-06-23T00:00:00Z)\r\n  |> filter(fn: (r) => r._measurement == \"actuator_data\")\r\n  |> filter(fn: (r) => r._field == \"FIT 101\")\r\n  |> group()\r\n  |> last()",
           "refId": "A"
         }
       ],
@@ -557,7 +567,7 @@
             "steps": [
               {
                 "color": "red",
-                "value": null
+                "value": 0
               },
               {
                 "color": "green",
@@ -568,7 +578,8 @@
                 "value": 700
               }
             ]
-          }
+          },
+          "unit": "litre"
         },
         "overrides": []
       },
@@ -591,16 +602,17 @@
           "values": false
         },
         "showThresholdLabels": false,
-        "showThresholdMarkers": true
+        "showThresholdMarkers": true,
+        "sizing": "auto"
       },
-      "pluginVersion": "10.2.0",
+      "pluginVersion": "12.2.1",
       "targets": [
         {
           "datasource": {
             "type": "influxdb",
             "uid": "P951FEA4DE68E13C5"
           },
-          "query": "from(bucket: \"scada_normal\")\r\n  |> range(start: 2020-06-22T00:00:00Z, stop: 2020-06-23T00:00:00Z)\r\n  |> filter(fn: (r) => r._measurement == \"actuator_data\")\r\n  |> filter(fn: (r) => r._field == \"LIT101.Pv\")\r\n  |> group()\r\n  |> last()",
+          "query": "from(bucket: \"normal_data\")\r\n  |> range(start: 2020-06-22T00:00:00Z, stop: 2020-06-23T00:00:00Z)\r\n  |> filter(fn: (r) => r._measurement == \"actuator_data\")\r\n  |> filter(fn: (r) => r._field == \"LIT 101\")\r\n  |> group()\r\n  |> last()",
           "refId": "A"
         }
       ],
@@ -608,9 +620,14 @@
       "type": "gauge"
     }
   ],
+  "preload": false,
   "refresh": "",
-  "schemaVersion": 38,
-  "tags": [],
+  "schemaVersion": 42,
+  "tags": [
+    "Industrial Monitoring",
+    "Chemical Dosing",
+    "Initial Data State"
+  ],
   "templating": {
     "list": []
   },
@@ -622,6 +639,5 @@
   "timezone": "",
   "title": "NT-SCADA Operations Monitoring",
   "uid": "fa093fbb-90cf-49d8-b04a-77b289004b9a",
-  "version": 7,
-  "weekStart": ""
+  "version": 2
 }
