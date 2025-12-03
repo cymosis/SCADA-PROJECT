@@ -57,7 +57,8 @@ The kafka Analytics bucket stored realtime performance metrics for the kafka inf
    
 6. **Anomaly Detection**
    We implemented a multistep approach for anomaly dtection and classification. The anomaly detection process was done in four layers, the first layer was the z-score, second layer was rule based method, the third layer was the binary and fine grained model and the fourth layer was the pattern matching layer.
-   **Layer 1 (Statistical Z-Score method):** Z-score measures how many standard deviations a data point is from the mean. It shows if a data point os normal or unusual based on the historical data. It is usually given by:
+   
+**Layer 1 (Statistical Z-Score method):** Z-score measures how many standard deviations a data point is from the mean. It shows if a data point os normal or unusual based on the historical data. It is usually given by:
    Z = (X-μ)/σ
    Where: X is the current data point
           μ is the mean
@@ -68,14 +69,17 @@ The kafka Analytics bucket stored realtime performance metrics for the kafka inf
    |z| > 3.0  →  HIGH       (very unusual, 99.7% confidence)
    |z| > 4.0  →  CRITICAL   (extremely unusual, 99.99% confidence)
    The reason for using Z score is that most of the data is usually falls within within ±3σ. If the reading is any value outside this range, then the value is abnormal. One drawback of this method is that it assumes a normal distribution which is usually not the case in most datasets and also doe not have context i.e. it does not understand the physical meaning of the values.
+   
 **Layer 2 (Rule Based Detection):** In this method, safety rules and operational limits are applied. These are rules that under normal operation should never be violated. The types of rules used here include:
 Physical Constraints: We set physical  constraints on the datasets e.g. for the case of a temperature sensor, the temperature should not be below -10 and not above 100.
 Critical ranges (Safety Zones): We defined normal operation condition in the dataset e.g. for the case of a tank water level, 0 is the minimum value and 1000 is the maximum value,then 200 is critically low and 900 is critically high and so on.
 Valid state sets: Here, we defined the valid states of the pump where 0 represents off, 1 represents starting, 2 represents on and 3 represents stop
 The rules made were based on physical laws, equipment specifications, safety standards and engineering experience. The limitations of this method is however the following: requires complete set of rules so as to define all constraints, it is time consuming to build the rule set, may not adapt to system changes as needed and therefore might miss some attacks.
+
 **Layer 3 (Machine Learning Detection):** In this method, we used trained machie learning models to learn patterns in the data. Two types of models were used,binary model and fine frained model.
 Binary Model: The purpose of the Binary model was to classify the data point as either Normal(0) or attack(1). The Random Forest Classifier was used in this case. The classifier used 100 decision trees and each tree voted. The majority won. The model was trained on the entire data, both normal and attack data.
 Fine-grained model: The purpose of this model was to classify the attacks into eight specific types. The Multi-class Random Forest Classifier was used in this case. The eight types of classes include NORMAL, DOS, NMRI, CMRI, SSCP, SSMP, MSCP, MSMP, RECON. The model was  trained on the labelled attack data.
+
 Attack type mapping was done at this stage as below:
 0: 'NORMAL',
     1: 'DOS',    # Denial of Service
@@ -86,8 +90,11 @@ Attack type mapping was done at this stage as below:
     6: 'MSCP',   # Multi Stage Single Point
     7: 'MSMP',   # Multi Stage Multi Point
     8: 'RECON'   # Reconnaissance
+    
    The reason for using Random Forest was that it was able to handle the features well, it could handle non liear relationships and it worked well with imbalanced data. The limitations include, hard to explain why it classified somthing the way it did, it could memorize training data leading to overfitting and new attacks could be misclassified as it only classifies based on what it has seen.
+   
 **Layer 4 (Pattern Based Classification):** This section dealt with the analyzing of structure and scope of the anomalies so as to classify the attack type based on number of sensors affected, number of stages affected, type of sensors and historical patterns. We used the academic attack taxonomy from Goh et al.(2016).
+
 DOS (denial of Service): ALL sensors showed constant values. There was no variation over time.
 NMRI (Naive Malicious Response Injection): Characterised by 1-2 actuators in the wrong state.
 CMRI (Complex Malicious Response Injection): Characterised by 3+ actuators having coordinated changes.
@@ -104,15 +111,16 @@ Each anomaly event is then written to the Anomaly data bucket in influxDB. These
    SCADA Operation Monitoring Dashboard: This was responsible for monitoring normal SCADA Operations. Data used was from the norml data bucket present in influxDB. It displayed the sensor values at the different water treatment stages including the status of the actuators.
    Anomaly Detection Dashboard: This was used to display the performance and results of the anomaly detection system. It consumed data from the anomaly data bucket present in influxDB. 11 panels were implemented in this regard.
 
-The architecture describing the entire process is as below:
- _________________________________________________________________________
+┌─────────────────────────────────────────────────────────────────────────┐
 │                      COMPLETE NT-SCADA DATA FLOW                        │
 └─────────────────────────────────────────────────────────────────────────┘
 
 [Excel Files] → [Preprocessing] → [Renamed Excel]
   22,628 rows       data_mapping      78 columns
   14,996 rows         .ipynb          standardized
+      |                                    |
       ↓                                    ↓
+      
       └────────────────┬───────────────────┘
                        ↓
               ┌────────┴────────┐
@@ -121,37 +129,40 @@ The architecture describing the entire process is as below:
               │  attack.py      │ → scada.attacks topic
               └────────┬────────┘
                        ↓
-               _____________________________
-              │   KAFKA BROKER             │
-              │   3 topics:                │
-              │   - scada.normal           │
-              │   - scada.attacks          │
-              │   - scada.analytics_timer  │
-              ______________________________
+              ____________________
+              │   KAFKA BROKER   │
+              │   3 topics:      │
+              │   - scada.normal │
+              │   - scada.attacks│
+              │   - analytics    │
+              └────────┬────────┘
                        ↓
-         ┌─────────────┼─────────────┐
-         ↓             ↓              ↓
-   [2 CONSUMERS]  [FLINK]      [Could add more]
-         ↓             ↓
-   [INFLUXDB]    [INFLUXDB]
-   2 buckets     1 bucket
-   - normal_data - Kafka Analytics bucket
+         ______________________
+         |                    |
+         ↓                    ↓              
+   [2 CONSUMERS]          [FLINK]      
+         ↓                   ↓
+         
+   [INFLUXDB]           [INFLUXDB]
+   2 buckets               1 bucket
+   - normal_data           - kafka_analytics
    - attack_data
          ↓
+     
    [ANOMALY DETECTOR]
-     (4-layer hybrid detector)
+   (4-layer hybrid)
          ↓
+     
    [INFLUXDB]
    - anomaly_data bucket
          ↓
+     
    [GRAFANA]
-   - SCADA Operations Monitoring dashboard
-   - Anomaly Detection dashboard
+   - SCADA dashboard
+   - Anomaly dashboard
+     
          ↓
    [USER MONITORING]
-
-
-
 
 
 ## Work Plan & Phases
