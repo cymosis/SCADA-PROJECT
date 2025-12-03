@@ -59,15 +59,25 @@ The kafka Analytics bucket stored realtime performance metrics for the kafka inf
    We implemented a multistep approach for anomaly dtection and classification. The anomaly detection process was done in four layers, the first layer was the z-score, second layer was rule based method, the third layer was the binary and fine grained model and the fourth layer was the pattern matching layer.
    
 **Layer 1 (Statistical Z-Score method):** Z-score measures how many standard deviations a data point is from the mean. It shows if a data point os normal or unusual based on the historical data. It is usually given by:
+
    Z = (X-μ)/σ
+   
    Where: X is the current data point
+   
           μ is the mean
+          
           σ is the set standard deviation
+          
    We had four thresholds for our Z-score as described below:
+   
    |z| < 2.0  →  NORMAL     (within 95% of data)
+   
    |z| > 2.0  →  MODERATE   (unusual, 95% confidence)
+   
    |z| > 3.0  →  HIGH       (very unusual, 99.7% confidence)
+   
    |z| > 4.0  →  CRITICAL   (extremely unusual, 99.99% confidence)
+   
    The reason for using Z score is that most of the data is usually falls within within ±3σ. If the reading is any value outside this range, then the value is abnormal. One drawback of this method is that it assumes a normal distribution which is usually not the case in most datasets and also doe not have context i.e. it does not understand the physical meaning of the values.
    
 **Layer 2 (Rule Based Detection):** In this method, safety rules and operational limits are applied. These are rules that under normal operation should never be violated. The types of rules used here include:
@@ -81,14 +91,23 @@ Binary Model: The purpose of the Binary model was to classify the data point as 
 Fine-grained model: The purpose of this model was to classify the attacks into eight specific types. The Multi-class Random Forest Classifier was used in this case. The eight types of classes include NORMAL, DOS, NMRI, CMRI, SSCP, SSMP, MSCP, MSMP, RECON. The model was  trained on the labelled attack data.
 
 Attack type mapping was done at this stage as below:
-0: 'NORMAL',
+
+    0: 'NORMAL',
+    
     1: 'DOS',    # Denial of Service
+    
     2: 'NMRI',   # Naive Malicious Response Injection
+    
     3: 'CMRI',   # Complex Malicious Response Injection
+    
     4: 'SSCP',   # Single Stage Single Point
+    
     5: 'SSMP',   # Single Stage Multi Point
+    
     6: 'MSCP',   # Multi Stage Single Point
+    
     7: 'MSMP',   # Multi Stage Multi Point
+    
     8: 'RECON'   # Reconnaissance
     
    The reason for using Random Forest was that it was able to handle the features well, it could handle non liear relationships and it worked well with imbalanced data. The limitations include, hard to explain why it classified somthing the way it did, it could memorize training data leading to overfitting and new attacks could be misclassified as it only classifies based on what it has seen.
@@ -96,13 +115,21 @@ Attack type mapping was done at this stage as below:
 **Layer 4 (Pattern Based Classification):** This section dealt with the analyzing of structure and scope of the anomalies so as to classify the attack type based on number of sensors affected, number of stages affected, type of sensors and historical patterns. We used the academic attack taxonomy from Goh et al.(2016).
 
 DOS (denial of Service): ALL sensors showed constant values. There was no variation over time.
+
 NMRI (Naive Malicious Response Injection): Characterised by 1-2 actuators in the wrong state.
+
 CMRI (Complex Malicious Response Injection): Characterised by 3+ actuators having coordinated changes.
+
 SSCP (Single Stage Single Point): Characterised by 1-2 sensors affected in one stage.
+
 SSMP (Single Stage Multi Point):Characterised by 3+ sensors being affected in the same stage.Target one process stage.
+
 MSCP (Multi Stage Single Point): Characterised by Same sensor type across 2+ stages being affected. Target a specific sensor family
+
 MSMP (Multi Stage Multi Point): Characterised by 5+ sensors across 3+ stages being affected.
+
 RECON (Reconnaissance): Characterized by Rapid sequential sensor access and Frequent small anomalies.
+
 The advantages of this method is that it does not require any training and it is context aware. The limitations however are that it requires anomalies from Layers 1 - 3, has a fixed taxonomy and it cannot adapt to new patterns automatically.
 
 Each anomaly event is then written to the Anomaly data bucket in influxDB. These results will then be visualized in Grafana.
@@ -110,60 +137,6 @@ Each anomaly event is then written to the Anomaly data bucket in influxDB. These
 7. **Visualization:** The system used Grafana to visualize both the industrial process and the anomaly metrics. Two dashboards were created, a SCADA operations monitoring dashboard and an anomaly detection dashboard.
    SCADA Operation Monitoring Dashboard: This was responsible for monitoring normal SCADA Operations. Data used was from the norml data bucket present in influxDB. It displayed the sensor values at the different water treatment stages including the status of the actuators.
    Anomaly Detection Dashboard: This was used to display the performance and results of the anomaly detection system. It consumed data from the anomaly data bucket present in influxDB. 11 panels were implemented in this regard.
-
-┌─────────────────────────────────────────────────────────────────────────┐
-│                      COMPLETE NT-SCADA DATA FLOW                        │
-└─────────────────────────────────────────────────────────────────────────┘
-
-[Excel Files] → [Preprocessing] → [Renamed Excel]
-  22,628 rows       data_mapping      78 columns
-  14,996 rows         .ipynb          standardized
-      |                                    |
-      ↓                                    ↓
-      
-      └────────────────┬───────────────────┘
-                       ↓
-              ┌────────┴────────┐
-              │   2 PRODUCERS   │
-              │  normal_data.py │ → scada.normal topic
-              │  attack.py      │ → scada.attacks topic
-              └────────┬────────┘
-                       ↓
-              ____________________
-              │   KAFKA BROKER   │
-              │   3 topics:      │
-              │   - scada.normal │
-              │   - scada.attacks│
-              │   - analytics    │
-              └────────┬────────┘
-                       ↓
-         ______________________
-         |                    |
-         ↓                    ↓              
-   [2 CONSUMERS]          [FLINK]      
-         ↓                   ↓
-         
-   [INFLUXDB]           [INFLUXDB]
-   2 buckets               1 bucket
-   - normal_data           - kafka_analytics
-   - attack_data
-         ↓
-     
-   [ANOMALY DETECTOR]
-   (4-layer hybrid)
-         ↓
-     
-   [INFLUXDB]
-   - anomaly_data bucket
-         ↓
-     
-   [GRAFANA]
-   - SCADA dashboard
-   - Anomaly dashboard
-     
-         ↓
-   [USER MONITORING]
-
 
 ## Work Plan & Phases
 
