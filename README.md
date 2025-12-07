@@ -291,6 +291,38 @@ Contributions are welcome! Here's how you can help:
 - **Performance**: Optimize processing pipelines
 
 ---
+### References
+1. Dr.K.Sundravadivelu, Mrs.P.Renuka, Mrs.V.Suganthi, Mrs.S.Durgadevi, & Krishna, M.
+(2024). Streaming intelligence: Mastering stream processing for real-time data analysis. SK
+Research Group of Companies.
+
+2. Eltomy, R., & Lalouani, W. (2024). Explainable intrusion detection in industrial control systems. 2024 IEEE 7th International Conference on Industrial Cyber-Physical Systems
+(ICPS), 1-8. https://doi.org/10.1109/icps59941.2024.10640024https://doi.org/10.1109/icps59941.2024.
+
+3.Rieger, C., Ray, I., Zhu, Q., & Haney, M. A. (2019). Industrial control systems security and resiliency: Practice and theory. Springer Nature.
+
+4.Kreps, J., Narkhede, N., Rao, J. (2011). Kafka: A distributed messaging system for log processing. In Proceedings of the 6th International Workshop on Networking Meets Databases (NetDB), Athens, Greece
+
+5. Goldstein, M., & Uchida, S. (2016). A comparative evaluation of unsupervised anomaly detection algorithms for multivariate data, 11(4), e0152173.
+
+6. Urbina, D. I., Giraldo, J. A., Cardenas, A. A., Tippenhauer, N. O., Valente, J., Faisal, M., ... & Candell, R. (2016). Limiting the impact of stealthy attacks on industrial control systems. In *Proceedings of the 2016 ACM SIGSAC conference on computer and communications security* (pp. 1092-1105).
+
+7. Mathur, A. P., & Tippenhauer, N. O. (2016). SWaT: A water treatment testbed for research and training on ICS security. In *2016 international workshop on cyber-physical systems for smart water networks (CySWater)* (pp. 31-36). IEEE.
+
+8. Goh, J., Adepu, S., Junejo, K. N., & Mathur, A. (2016). A dataset to support research in the design of secure water treatment systems. In *International Conference on Critical Information Infrastructures Security* (pp. 88-99). Springer.
+
+9. Ahmed, C. M., Palleti, V. R., & Mathur, A. P. (2017). WADI: a water distribution testbed for research in the design of secure cyber physical systems. In *Proceedings of the 3rd International Workshop on Cyber-Physical Systems for Smart Water Networks* (pp. 25-28).
+
+10. Goh, J., Adepu, S., Tan, M., & Lee, Z. S. (2017). Anomaly detection in cyber physical systems using recurrent neural networks. In *2017 IEEE 18th International Symposium on High Assurance Systems Engineering (HASE)* (pp. 140-145). IEEE.
+
+11.Gao, W., Morris, T., Reaves, B., & Richey, D. (2010). On SCADA control system command and response injection and intrusion detection. *In 2010 eCrime Researchers Summit* (pp. 1-9). IEEE.
+
+12.NIST. (2015). *Guide to Industrial Control Systems (ICS) Security*. NIST Special Publication 800-82 Revision 2.
+
+
+   
+
+
 
 
 
