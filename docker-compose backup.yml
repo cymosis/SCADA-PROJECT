@@ -1,0 +1,369 @@
+networks:
+  scada-network:
+
+volumes:
+  influxdb_data:
+  grafana_data:
+
+
+
+
+services:
+  # ---------------------------------------------------------
+  # ZOOKEEPER
+  # ---------------------------------------------------------
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.7.0
+    container_name: zookeeper
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+    networks:
+      - scada-network
+    restart: unless-stopped
+
+  # ---------------------------------------------------------
+  # KAFKA BROKER
+  # ---------------------------------------------------------
+  kafka:
+    image: confluentinc/cp-kafka:7.7.0
+    container_name: kafka
+    depends_on:
+      - zookeeper
+    ports:
+      - "9092:9092"
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:29092,PLAINTEXT_HOST://0.0.0.0:9092
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:29092,PLAINTEXT_HOST://host.docker.internal:9092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
+      KAFKA_MESSAGE_MAX_BYTES: 2000000000
+      KAFKA_REPLICA_FETCH_MAX_BYTES: 2000000000
+      KAFKA_FETCH_MESSAGE_MAX_BYTES: 2000000000
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+    networks:
+      - scada-network
+    healthcheck:
+      test: ["CMD", "kafka-topics", "--bootstrap-server", "kafka:29092", "--list"]
+      interval: 10s
+      timeout: 10s
+      retries: 10
+      start_period: 20s
+    restart: unless-stopped
+
+  # ---------------------------------------------------------
+  # NORMAL DATA PRODUCER
+  # ---------------------------------------------------------
+  nt-scada-normal-producer:
+    build: ./nt-scada/producers/normal
+    container_name: nt-scada-normal-producer1
+    volumes:
+      - ./nt-scada/data:/app/data
+    environment:
+      KAFKA_BOOTSTRAP_SERVERS: kafka:29092
+    depends_on:
+      - kafka
+    restart: always
+    networks:
+      - scada-network
+
+  # ---------------------------------------------------------
+  # ATTACK DATA PRODUCER
+  # ---------------------------------------------------------
+  nt-scada-attack-producer:
+    build: ./nt-scada/producers/attack
+    container_name: nt-scada-attack-producer
+    volumes:
+      - ./nt-scada/data:/app/data
+    environment:
+      KAFKA_BOOTSTRAP_SERVERS: kafka:29092
+    depends_on:
+      - kafka
+    restart: always
+    networks:
+      - scada-network
+
+  # ---------------------------------------------------------
+  # NORMAL → INFLUXDB CONSUMER
+  # ---------------------------------------------------------
+  normal-influx-consumer:
+    build:
+      context: ./nt-scada/consumers/normal
+      dockerfile: Dockerfile
+    container_name: nt-scada-normal-influx-consumer
+    depends_on:
+      - kafka
+      - influxdb
+    environment:
+      KAFKA_BOOTSTRAP_SERVERS: kafka:29092
+      INFLUX_URL: http://influxdb:8086
+      INFLUX_TOKEN: mytoken
+      INFLUX_ORG: scada
+      INFLUX_BUCKET: normal_data
+    networks:
+      - scada-network
+    restart: unless-stopped
+
+  # ---------------------------------------------------------
+  # ATTACK → INFLUXDB CONSUMER
+  # ---------------------------------------------------------
+  attack-influx-consumer:
+    build:
+      context: ./nt-scada/consumers/attack
+      dockerfile: Dockerfile
+    container_name: nt-scada-attack-influx-consumer
+    depends_on:
+      - kafka
+      - influxdb
+    environment:
+      KAFKA_BOOTSTRAP_SERVERS: kafka:29092
+      INFLUX_URL: http://influxdb:8086
+      INFLUX_TOKEN: mytoken
+      INFLUX_ORG: scada
+      INFLUX_BUCKET: attack_data
+    networks:
+      - scada-network
+    restart: unless-stopped
+
+  # ---------------------------------------------------------
+  # INFLUXDB
+  # ---------------------------------------------------------
+  influxdb:
+    image: influxdb:2.7
+    container_name: influxdb
+    ports:
+      - "8086:8086"
+    environment:
+      DOCKER_INFLUXDB_INIT_MODE: setup
+      DOCKER_INFLUXDB_INIT_USERNAME: admin
+      DOCKER_INFLUXDB_INIT_PASSWORD: adminpassword
+      DOCKER_INFLUXDB_INIT_ORG: scada
+      DOCKER_INFLUXDB_INIT_BUCKET: normal_data
+      DOCKER_INFLUXDB_INIT_ADMIN_TOKEN: mytoken
+    volumes:
+      - influxdb_data:/var/lib/influxdb2
+    networks:
+      - scada-network
+    restart: unless-stopped
+
+  # ---------------------------------------------------------
+  # KAFKA UI
+  # ---------------------------------------------------------
+  kafka-ui:
+    image: provectuslabs/kafka-ui
+    container_name: kafka-ui
+    environment:
+      KAFKA_CLUSTERS_0_NAME: scada-cluster
+      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:29092
+    ports:
+      - "8080:8080"
+    depends_on:
+      - kafka
+    networks:
+      - scada-network
+    restart: unless-stopped
+
+  # ---------------------------------------------------------
+  # INFLUXDB INIT - Create buckets automatically
+  # ---------------------------------------------------------
+  influxdb-init:
+    image: influxdb:2.7
+    container_name: influxdb-init
+    depends_on:
+      - influxdb
+    networks:
+      - scada-network
+    entrypoint: ["/bin/bash", "-c"]
+    command:
+      - |
+        echo "Waiting for InfluxDB to be ready..."
+        until curl -s http://influxdb:8086/health | grep -q '"status":"pass"'; do
+          echo "Waiting..."
+          sleep 2
+        done
+        echo "InfluxDB is ready!"
+        
+        # Check if normal_data bucket exists, create if not
+        if ! influx bucket list --host http://influxdb:8086 --token mytoken --org scada | grep -q "normal_data"; then
+          echo "Creating normal_data bucket..."
+          influx bucket create --host http://influxdb:8086 --token mytoken --org scada --name normal_data
+          echo "✓ normal_data bucket created"
+        else
+          echo "✓ normal_data bucket already exists"
+        fi
+
+
+        # Check if anomaly_data bucket exists, create if not
+        if ! influx bucket list --host http://influxdb:8086 --token mytoken --org scada | grep -q "anomaly_data"; then
+          echo "Creating anomaly_data bucket..."
+          influx bucket create --host http://influxdb:8086 --token mytoken --org scada --name anomaly_data
+          echo "✓ anomaly_data bucket created"
+        else
+          echo "✓ anomaly_data bucket already exists"
+        fi
+
+        # Check if kafka_analytics bucket exists, create if not
+        if ! influx bucket list --host http://influxdb:8086 --token mytoken --org scada | grep -q "kafka_analytics"; then
+          echo "Creating kafka_analytics bucket..."
+          influx bucket create --host http://influxdb:8086 --token mytoken --org scada --name kafka_analytics
+          echo "✓ kafka_analytics bucket created"
+        else
+          echo "✓ kafka_analytics bucket already exists"
+        fi
+        
+        # Check if attack_data bucket exists, create if not
+        if ! influx bucket list --host http://influxdb:8086 --token mytoken --org scada | grep -q "attack_data"; then
+          echo "Creating attack_data bucket..."
+          influx bucket create --host http://influxdb:8086 --token mytoken --org scada --name attack_data
+          echo "✓ attack_data bucket created"
+        else
+          echo "✓ attack_data bucket already exists"
+        fi
+        
+        echo "All buckets initialized successfully!"
+    restart: "no"
+
+  #----------------------------------------------------
+  # ANOMALY DETECTOR
+  # ---------------------------------------------------------
+  anomaly-detector:
+    build:
+      context: ./nt-scada/batch/models/models/anomalies
+      dockerfile: Dockerfile
+    container_name: anomaly-detector
+    environment:
+      INFLUXDB_URL: http://influxdb:8086
+      INFLUXDB_TOKEN: mytoken
+      INFLUXDB_ORG: scada
+      INFLUXDB_BUCKET: normal_data
+      ANOMALY_BUCKET: anomaly_data
+      POLLING_INTERVAL: "5"
+      ANOMALY_THRESHOLD: "0.07"
+    depends_on:
+      - influxdb
+    networks:
+      - scada-network
+    volumes:
+      - ./nt-scada/batch/models/models/anomalies/models:/app/models
+    restart: unless-stopped 
+
+# ---------------------------------------------------------
+# FLINK JOBMANAGER
+# ---------------------------------------------------------
+  flink-jobmanager:
+    build:
+      context: ./nt-scada/flink
+      dockerfile: Dockerfile
+    container_name: flink-jobmanager
+    hostname: flink-jobmanager
+    ports:
+      - "8081:8081"   # Flink Web Dashboard
+      - "6123:6123"   # RPC port for TaskManagers
+    environment:
+      FLINK_PROPERTIES: |
+        jobmanager.rpc.address: flink-jobmanager
+        taskmanager.numberOfTaskSlots: 4
+    command: jobmanager
+    networks:
+      - scada-network
+    restart: unless-stopped
+    volumes:
+      - ./nt-scada/flink/jobs:/opt/flink/jobs
+
+# ---------------------------------------------------------
+# FLINK TASKMANAGER
+# ---------------------------------------------------------
+  flink-taskmanager:
+    build:
+      context: ./nt-scada/flink
+      dockerfile: Dockerfile
+    container_name: flink-taskmanager
+    depends_on:
+      - flink-jobmanager
+    environment:
+      FLINK_PROPERTIES: |
+        jobmanager.rpc.address: flink-jobmanager
+      TASK_MANAGER_NUMBER_OF_TASK_SLOTS: "4"
+    command: taskmanager
+    networks:
+      - scada-network
+    restart: unless-stopped
+    volumes:
+      - ./nt-scada/flink/jobs:/opt/flink/jobs
+
+# ---------------------------------------------------------
+# FLINK JOB SUBMISSION SERVICE
+# ---------------------------------------------------------
+  flink-job-submitter:
+    build:
+      context: ./nt-scada/flink
+      dockerfile: Dockerfile
+    container_name: flink-job-submitter
+    depends_on:
+      - flink-jobmanager
+      - kafka
+      - influxdb
+    environment:
+      INFLUXDB_URL: http://influxdb:8086
+      INFLUXDB_TOKEN: mytoken
+      INFLUXDB_ORG: scada
+      INFLUXDB_BUCKET: kafka_analytics
+      KAFKA_BOOTSTRAP_SERVERS: kafka:29092
+      FLINK_REST_URL: http://flink-jobmanager:8081
+    networks:
+      - scada-network
+    volumes:
+      - ./nt-scada/flink/jobs:/opt/flink/jobs
+    restart: unless-stopped
+    entrypoint: ["python3", "/opt/flink/jobs/submit_job.py"]
+
+
+  # ---------------------------------------------------------
+  # REAL-TIME ANALYTICS TIMER
+  # ---------------------------------------------------------
+  realtime-analytics-timer:
+    build:
+      context: ./nt-scada/flink
+      dockerfile: Dockerfile
+    container_name: realtime-analytics-timer
+    depends_on:
+      - kafka
+      - flink-jobmanager
+    environment:
+      KAFKA_BOOTSTRAP_SERVERS: kafka:29092
+      ANALYTICS_INTERVAL: "30"
+    networks:
+      - scada-network
+    volumes:
+      - ./nt-scada/flink/jobs:/opt/flink/jobs
+    restart: unless-stopped
+    command: ["python3", "/opt/flink/jobs/timer_producer.py"]
+
+  # ---------------------------------------------------------
+  # GRAFANA
+  # ---------------------------------------------------------
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana
+    ports:
+      - "3000:3000"
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: admin
+      GF_INSTALL_PLUGINS: ""
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./nt-scada/grafana/provisioning:/etc/grafana/provisioning
+      - ./nt-scada/grafana/dashboards:/var/lib/grafana/dashboards
+    depends_on:
+      - influxdb
+    networks:
+      - scada-network
+    restart: unless-stopped
+
+# ---------------------------------------------------------
+# NETWORK + VOLUMES
+# ---------------------------------------------------------
