@@ -1,10 +1,10 @@
 # Project Contributions: Stream Mining & Advanced Analytics
 **Contributor**: Narayan Anshu
 
-## 🔭 Overview
+## Overview
 This document details the implementation of advanced **Stream Mining** techniques integrated into the NT-SCADA system. The work focuses on moving beyond static anomaly detection to dynamic, adaptive real-time analytics using open-source technologies.
 
-## 🚀 Key Contributions
+## Key Contributions
 
 ### 1. Advanced Stream Mining Architecture
 Designed and implemented a **Sidecar Architecture** for the mining engine.
@@ -32,10 +32,8 @@ Integrated cutting-edge open-source libraries to enhance system intelligence:
 #### C. Real-time Rolling Statistics
 - **Function**: Calculates sliding window variance and means to detect instability before it breaches absolute limits.
 
-## 📂 Artifacts Created
+## Artifacts Created
 - `nt-scada/stream/stream_miner.py`: The Python-based stream mining engine.
 - `nt-scada/stream/STREAM_MINING_ROADMAP.md`: A strategic roadmap for future analytics capabilities.
 - `nt-scada/requirements.txt`: Updated dependencies to include `river`.
 
----
-*This work advances the NT-SCADA project from a static monitoring system to an adaptive, intelligent platform capable of handling the dynamic nature of industrial environments.*
