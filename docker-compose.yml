@@ -1,9 +1,9 @@
 version: '3.8'
 
 services:
-  # ============================================
+
   # INFRASTRUCTURE LAYER (Kafka, Zookeeper)
-  # ============================================
+
 
   zookeeper:
     image: confluentinc/cp-zookeeper:7.7.0
@@ -56,9 +56,9 @@ services:
     networks:
       - scada-network
 
-  # ============================================
+  
   # STORAGE LAYER (InfluxDB 2.x)
-  # ============================================
+ 
 
   influxdb:
     image: influxdb:2.7
@@ -82,9 +82,9 @@ services:
       timeout: 5s
       retries: 5
 
-  # ============================================
+
   # VISUALIZATION LAYER (Grafana)
-  # ============================================
+
 
   grafana:
     image: grafana/grafana:10.2.0
@@ -104,9 +104,9 @@ services:
     networks:
       - scada-network
 
-  # ============================================
+  
   # STREAM PROCESSING LAYER (Flink)
-  # ============================================
+ 
 
   flink-jobmanager:
     image: flink:1.18.0-scala_2.12-java11
@@ -140,9 +140,9 @@ services:
     networks:
       - scada-network
 
-  # ============================================
+
   # NT-SCADA DATA PRODUCERS
-  # ============================================
+
 
   sensor-producer:
     build:
@@ -174,9 +174,9 @@ services:
       - scada-network
     restart: unless-stopped
 
-  # ============================================
+  
   # NT-SCADA STREAM PROCESSOR
-  # ============================================
+ 
 
   stream-processor:
     build:
@@ -197,9 +197,9 @@ services:
       - scada-network
     restart: unless-stopped
 
-  # ============================================
+
   # NT-SCADA INFLUXDB CONSUMER
-  # ============================================
+
 
   influx-consumer:
     build:
@@ -221,9 +221,9 @@ services:
       - scada-network
     restart: unless-stopped
 
-  # ============================================
+  
   # NT-SCADA BATCH ANALYTICS
-  # ============================================
+
 
   batch-analytics:
     build:
@@ -243,17 +243,17 @@ services:
     networks:
       - scada-network
 
-# ============================================
+
 # NETWORKS
-# ============================================
+
 
 networks:
   scada-network:
     driver: bridge
 
-# ============================================
+
 # VOLUMES
-# ============================================
+
 
 volumes:
   influxdb_data:
