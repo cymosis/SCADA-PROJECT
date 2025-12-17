@@ -2,9 +2,9 @@
 
 set -e
 
-echo "╔════════════════════════════════════════════════════════════╗"
-echo "║     NT-SCADA Production System Startup Script              ║"
-echo "╚════════════════════════════════════════════════════════════╝"
+
+echo " NT-SCADA Production System Startup Script  "
+
 
 # Colors for output
 GREEN='\033[0;32m'
@@ -109,59 +109,55 @@ echo -e "${BLUE}[*] Starting stream processor...${NC}"
 docker-compose up -d stream-processor
 
 echo ""
-echo "╔════════════════════════════════════════════════════════════╗"
-echo "║           NT-SCADA Started Successfully! 🚀                ║"
-echo "╠════════════════════════════════════════════════════════════╣"
-echo "║                   Access Points:                            ║"
-echo "║                                                             ║"
-echo "║   Grafana (Dashboards):                                    ║"
-echo "║   → http://localhost:3000                                  ║"
-echo "║   → Credentials: admin / admin                             ║"
-echo "║                                                             ║"
-echo "║   MLflow (Model Registry):                                 ║"
-echo "║   → http://localhost:5000                                  ║"
-echo "║                                                             ║"
-echo "║   InfluxDB (Time-Series Data):                             ║"
-echo "║   → http://localhost:8086                                  ║"
-echo "║   → Credentials: admin / adminpass123                      ║"
-echo "║                                                             ║"
-echo "║   Kafka Broker:                                            ║"
-echo "║   → localhost:9092 (external)                              ║"
-echo "║   → kafka:29092 (internal)                                 ║"
-echo "║                                                             ║"
-echo "║   Flink Dashboard (Optional):                              ║"
-echo "║   → http://localhost:8081                                  ║"
-echo "║                                                             ║"
-echo "╠════════════════════════════════════════════════════════════╣"
-echo "║                    Useful Commands:                         ║"
-echo "║                                                             ║"
-echo "║   View all logs:                                           ║"
-echo "║   $ docker-compose logs -f                                 ║"
-echo "║                                                             ║"
-echo "║   View specific service logs:                              ║"
-echo "║   $ docker-compose logs -f batch-analytics                 ║"
-echo "║   $ docker-compose logs -f stream-processor                ║"
-echo "║                                                             ║"
-echo "║   Stop all services:                                       ║"
-echo "║   $ docker-compose down                                    ║"
-echo "║                                                             ║"
-echo "║   View service status:                                     ║"
-echo "║   $ docker-compose ps                                      ║"
-echo "║                                                             ║"
-echo "║   Check Kafka topics:                                      ║"
-echo "║   $ docker-compose exec kafka kafka-topics --list \\       ║"
-echo "║     --bootstrap-server kafka:29092                         ║"
-echo "║                                                             ║"
-echo "╠════════════════════════════════════════════════════════════╣"
-echo "║              Documentation:                                 ║"
-echo "║                                                             ║"
-echo "║   Complete Guide:                                          ║"
-echo "║   → PRODUCTION_GUIDE.md                                    ║"
-echo "║                                                             ║"
-echo "║   Implementation Details:                                  ║"
-echo "║   → IMPLEMENTATION_SUMMARY.md                              ║"
-echo "║                                                             ║"
-echo "╚════════════════════════════════════════════════════════════╝"
+
+echo " NT-SCADA Started Successfully! "
+
+echo "  Access Points: "
+
+echo " Grafana (Dashboards):  "
+echo " → http://localhost:3000 "
+echo " → Credentials: admin / admin "
+
+echo " MLflow (Model Registry):  "
+echo " → http://localhost:5000 "
+
+echo "InfluxDB (Time-Series Data):  "
+echo " → http://localhost:8086"
+echo " → Credentials: admin / adminpass123 "
+
+echo "Kafka Broker: "
+echo " → localhost:9092 (external)  "
+echo " → kafka:29092 (internal)"
+
+echo " Flink Dashboard (Optional):"
+echo " → http://localhost:8081 "
+
+
+echo " View all logs:  "
+echo " $ docker-compose logs -f "
+
+echo " View specific service logs:  "
+echo " $ docker-compose logs -f batch-analytics "
+echo " $ docker-compose logs -f stream-processor"
+
+echo "Stop all services: "
+echo "  $ docker-compose down  "
+
+echo "  View service status:  "
+echo " $ docker-compose ps "
+
+echo " Check Kafka topics:"
+echo "  $ docker-compose exec kafka kafka-topics --list \\"
+echo "  --bootstrap-server kafka:29092 "
+
+
+
+echo " Complete Guide: "
+echo "→ PRODUCTION_GUIDE.md "
+
+echo " Implementation Details: "
+echo " → IMPLEMENTATION_SUMMARY.md  "
+
 echo ""
 echo -e "${GREEN}System is ready!${NC}"
 echo ""
