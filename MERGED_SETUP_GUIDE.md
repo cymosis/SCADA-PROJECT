@@ -1,22 +1,22 @@
 # Merged NT-SCADA Setup Guide
 
-## ✅ What Was Done
+## What Was Done
 
 Your existing infrastructure and NT-SCADA have been **merged into one unified system**!
 
 ### Changes Made:
 
 1. **Updated `c:\scada-docker\docker-compose.yml`**:
-   - ✅ Kept your existing Kafka, Zookeeper, Kafka-UI
-   - ✅ Upgraded InfluxDB 1.8 → 2.7 (required for NT-SCADA)
-   - ✅ Upgraded Grafana 9.0 → 10.2
-   - ✅ Upgraded Flink 1.16 → 1.18
-   - ✅ Added NT-SCADA producers (sensor + actuator)
-   - ✅ Added NT-SCADA stream processor
-   - ✅ Added NT-SCADA InfluxDB consumer
-   - ✅ Added NT-SCADA batch analytics
-   - ✅ Commented out Telegraf (needs config update for InfluxDB 2.x)
-   - ✅ Added unified network: `scada-network`
+   - Kept your existing Kafka, Zookeeper, Kafka-UI
+   - Upgraded InfluxDB 1.8 → 2.7 (required for NT-SCADA)
+   - Upgraded Grafana 9.0 → 10.2
+   - Upgraded Flink 1.16 → 1.18
+   - Added NT-SCADA producers (sensor + actuator)
+   - Added NT-SCADA stream processor
+   - Added NT-SCADA InfluxDB consumer
+   - Added NT-SCADA batch analytics
+   - Commented out Telegraf (needs config update for InfluxDB 2.x)
+   - Added unified network: `scada-network`
 
 2. **Services Now Running** (13 total):
    - Infrastructure: Zookeeper, Kafka, Kafka-UI
@@ -27,7 +27,7 @@ Your existing infrastructure and NT-SCADA have been **merged into one unified sy
    - Processors: Stream Processor, InfluxDB Consumer
    - Analytics: Batch Analytics
 
-## 🚀 How to Start the Merged System
+## How to Start the Merged System
 
 ### Step 1: Stop Your Old Setup (if running)
 
@@ -36,7 +36,7 @@ cd c:\scada-docker
 docker-compose down
 ```
 
-**⚠️ IMPORTANT**: This will remove your old InfluxDB 1.8 data since we're upgrading to InfluxDB 2.x
+**IMPORTANT**: This will remove your old InfluxDB 1.8 data since we're upgrading to InfluxDB 2.x
 
 ### Step 2: Remove Old InfluxDB Volume (optional but recommended)
 
@@ -73,7 +73,7 @@ The system needs time to:
 - Start producing data
 - Process and store data
 
-## 🌐 Access Points
+## Access Points
 
 | Service | URL | Credentials |
 |---------|-----|-------------|
@@ -82,7 +82,7 @@ The system needs time to:
 | **Flink Dashboard** | http://localhost:8081 | No auth |
 | **InfluxDB** | http://localhost:8086 | admin / adminpass123 |
 
-## 📊 What's Different from Before
+## What's Different from Before
 
 ### InfluxDB Changes
 
@@ -118,7 +118,7 @@ To re-enable Telegraf:
 2. Uncomment the telegraf service in `docker-compose.yml`
 3. Restart: `docker-compose up -d`
 
-## 🔍 Verify Data Flow
+## Verify Data Flow
 
 ### 1. Check Kafka Topics
 
@@ -154,7 +154,7 @@ docker-compose exec influxdb influx query --org nt-scada --token nt-scada-token-
 4. Open **NT-SCADA Dashboard**
 5. You should see real-time data flowing!
 
-## 📈 Monitor the System
+## Monitor the System
 
 ### View All Logs
 
@@ -184,7 +184,7 @@ docker-compose logs -f batch-analytics
 docker stats
 ```
 
-## 🔧 Troubleshooting
+## Troubleshooting
 
 ### Problem: Services keep restarting
 
@@ -215,7 +215,7 @@ docker ps -a
 2. Set Memory to at least 8GB
 3. Apply & Restart
 
-## 🛑 Stop the System
+## Stop the System
 
 ```cmd
 cd c:\scada-docker
@@ -227,16 +227,16 @@ To remove all data and start fresh:
 docker-compose down -v
 ```
 
-## 📚 Next Steps
+## Next Steps
 
-1. ✅ Explore the Grafana dashboard
-2. ✅ Monitor real-time anomaly detection
-3. ✅ Run batch analytics: `docker-compose restart batch-analytics`
-4. ✅ Check generated ML models: `ls nt-scada/batch/models/`
-5. ✅ View daily reports: `ls nt-scada/batch/reports/`
-6. 📖 Read full documentation: `nt-scada/README.md`
+1. Explore the Grafana dashboard
+2. Monitor real-time anomaly detection
+3. Run batch analytics: `docker-compose restart batch-analytics`
+4. Check generated ML models: `ls nt-scada/batch/models/`
+5. View daily reports: `ls nt-scada/batch/reports/`
+6. Read full documentation: `nt-scada/README.md`
 
-## 🔄 Re-enabling Telegraf (Optional)
+## Re-enabling Telegraf (Optional)
 
 If you want to use Telegraf alongside NT-SCADA, update the config:
 
@@ -264,16 +264,16 @@ Then uncomment telegraf in `docker-compose.yml` and restart:
 docker-compose up -d
 ```
 
-## ✅ Summary
+## Summary
 
 You now have a **unified SCADA system** with:
-- ✅ Single infrastructure (Kafka, InfluxDB, Grafana, Flink)
-- ✅ Real-time data generation (30 sensors, 24 actuators)
-- ✅ Stream processing (anomaly detection, classification)
-- ✅ Time-series storage (InfluxDB 2.x)
-- ✅ Machine learning (binary + multi-class models)
-- ✅ Visualization (Grafana dashboards)
-- ✅ Batch analytics (daily reports)
+- Single infrastructure (Kafka, InfluxDB, Grafana, Flink)
+- Real-time data generation (30 sensors, 24 actuators)
+- Stream processing (anomaly detection, classification)
+- Time-series storage (InfluxDB 2.x)
+- Machine learning (binary + multi-class models)
+- Visualization (Grafana dashboards)
+- Batch analytics (daily reports)
 
 **Everything runs from one command**: `docker-compose up -d`
 
