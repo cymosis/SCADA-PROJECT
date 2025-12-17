@@ -43,5 +43,4 @@
 | `.gitignore` | Git configuration |
 | `requirements.txt` | Project dependencies |
 
----
-*Generated on 2025-11-29*
+
