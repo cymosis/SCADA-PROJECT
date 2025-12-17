@@ -1,11 +1,7 @@
-# 👨‍💻 Contributor: Narayan Anshu
-## 🚀 Role: Stream Mining & Advanced Analytics Lead
+# Contributor: Narayan Anshu
+## Role: Stream Mining & Advanced Analytics Lead
 
-This document outlines the specific contributions and technical implementations delivered by **Narayan Anshu** for the NT-SCADA project.
-
----
-
-### 🌟 Key Implementations
+### Key Implementations
 
 #### 1. Advanced Stream Mining Engine
 **File**: `nt-scada/stream/stream_miner.py`
@@ -35,9 +31,7 @@ This document outlines the specific contributions and technical implementations 
 - **Documentation**: Refactored the main `README.md` to adhere to professional standards.
 - **Version Control**: Created and configured `.gitignore` to ensure a clean repository.
 
----
-
-### 📂 Summary of Files Created/Modified
+### Summary of Files Created/Modified
 
 | File Path | Description |
 | :--- | :--- |
