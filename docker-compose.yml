@@ -9,9 +9,9 @@ volumes:
 
 
 services:
-  # ---------------------------------------------------------
+ 
   # ZOOKEEPER
-  # ---------------------------------------------------------
+
   zookeeper:
     image: confluentinc/cp-zookeeper:7.7.0
     container_name: zookeeper
@@ -22,9 +22,9 @@ services:
       - scada-network
     restart: unless-stopped
 
-  # ---------------------------------------------------------
+ 
   # KAFKA BROKER
-  # ---------------------------------------------------------
+ 
   kafka:
     image: confluentinc/cp-kafka:7.7.0
     container_name: kafka
@@ -54,9 +54,9 @@ services:
       start_period: 20s
     restart: unless-stopped
 
-  # ---------------------------------------------------------
+  
   # NORMAL DATA PRODUCER
-  # ---------------------------------------------------------
+  
   nt-scada-normal-producer:
     build: ./nt-scada/producers/normal
     container_name: nt-scada-normal-producer1
@@ -70,9 +70,8 @@ services:
     networks:
       - scada-network
 
-  # ---------------------------------------------------------
   # ATTACK DATA PRODUCER
-  # ---------------------------------------------------------
+  
   nt-scada-attack-producer:
     build: ./nt-scada/producers/attack
     container_name: nt-scada-attack-producer
@@ -86,9 +85,9 @@ services:
     networks:
       - scada-network
 
-  # ---------------------------------------------------------
+  
   # NORMAL → INFLUXDB CONSUMER
-  # ---------------------------------------------------------
+  
   normal-influx-consumer:
     build:
       context: ./nt-scada/consumers/normal
@@ -107,9 +106,9 @@ services:
       - scada-network
     restart: unless-stopped
 
-  # ---------------------------------------------------------
+ 
   # ATTACK → INFLUXDB CONSUMER
-  # ---------------------------------------------------------
+ 
   attack-influx-consumer:
     build:
       context: ./nt-scada/consumers/attack
@@ -128,9 +127,8 @@ services:
       - scada-network
     restart: unless-stopped
 
-  # ---------------------------------------------------------
   # INFLUXDB
-  # ---------------------------------------------------------
+  
   influxdb:
     image: influxdb:2.7
     container_name: influxdb
@@ -149,9 +147,8 @@ services:
       - scada-network
     restart: unless-stopped
 
-  # ---------------------------------------------------------
   # KAFKA UI
-  # ---------------------------------------------------------
+  
   kafka-ui:
     image: provectuslabs/kafka-ui
     container_name: kafka-ui
@@ -166,9 +163,9 @@ services:
       - scada-network
     restart: unless-stopped
 
-  # ---------------------------------------------------------
+  
   # INFLUXDB INIT - Create buckets automatically
-  # ---------------------------------------------------------
+ 
   influxdb-init:
     image: influxdb:2.7
     container_name: influxdb-init
@@ -190,9 +187,9 @@ services:
         if ! influx bucket list --host http://influxdb:8086 --token mytoken --org scada | grep -q "normal_data"; then
           echo "Creating normal_data bucket..."
           influx bucket create --host http://influxdb:8086 --token mytoken --org scada --name normal_data
-          echo "✓ normal_data bucket created"
+          echo "normal_data bucket created"
         else
-          echo "✓ normal_data bucket already exists"
+          echo "normal_data bucket already exists"
         fi
 
 
@@ -200,35 +197,35 @@ services:
         if ! influx bucket list --host http://influxdb:8086 --token mytoken --org scada | grep -q "anomaly_data"; then
           echo "Creating anomaly_data bucket..."
           influx bucket create --host http://influxdb:8086 --token mytoken --org scada --name anomaly_data
-          echo "✓ anomaly_data bucket created"
+          echo "anomaly_data bucket created"
         else
-          echo "✓ anomaly_data bucket already exists"
+          echo "anomaly_data bucket already exists"
         fi
 
         # Check if kafka_analytics bucket exists, create if not
         if ! influx bucket list --host http://influxdb:8086 --token mytoken --org scada | grep -q "kafka_analytics"; then
           echo "Creating kafka_analytics bucket..."
           influx bucket create --host http://influxdb:8086 --token mytoken --org scada --name kafka_analytics
-          echo "✓ kafka_analytics bucket created"
+          echo "kafka_analytics bucket created"
         else
-          echo "✓ kafka_analytics bucket already exists"
+          echo "kafka_analytics bucket already exists"
         fi
         
         # Check if attack_data bucket exists, create if not
         if ! influx bucket list --host http://influxdb:8086 --token mytoken --org scada | grep -q "attack_data"; then
           echo "Creating attack_data bucket..."
           influx bucket create --host http://influxdb:8086 --token mytoken --org scada --name attack_data
-          echo "✓ attack_data bucket created"
+          echo "attack_data bucket created"
         else
-          echo "✓ attack_data bucket already exists"
+          echo "attack_data bucket already exists"
         fi
         
         echo "All buckets initialized successfully!"
     restart: "no"
 
-  #----------------------------------------------------
+  
   # ANOMALY DETECTOR
-  # ---------------------------------------------------------
+  
   anomaly-detector:
     build:
       context: ./nt-scada/batch/models/models/anomalies
@@ -250,9 +247,9 @@ services:
       - ./nt-scada/batch/models/models/anomalies/models:/app/models
     restart: unless-stopped 
 
-# ---------------------------------------------------------
+
 # FLINK JOBMANAGER
-# ---------------------------------------------------------
+
   flink-jobmanager:
     build:
       context: ./nt-scada/flink
@@ -273,9 +270,8 @@ services:
     volumes:
       - ./nt-scada/flink/jobs:/opt/flink/jobs
 
-# ---------------------------------------------------------
 # FLINK TASKMANAGER
-# ---------------------------------------------------------
+
   flink-taskmanager:
     build:
       context: ./nt-scada/flink
@@ -294,9 +290,8 @@ services:
     volumes:
       - ./nt-scada/flink/jobs:/opt/flink/jobs
 
-# ---------------------------------------------------------
 # FLINK JOB SUBMISSION SERVICE
-# ---------------------------------------------------------
+
   flink-job-submitter:
     build:
       context: ./nt-scada/flink
@@ -321,9 +316,9 @@ services:
     entrypoint: ["python3", "/opt/flink/jobs/submit_job.py"]
 
 
-  # ---------------------------------------------------------
+  
   # REAL-TIME ANALYTICS TIMER
-  # ---------------------------------------------------------
+  
   realtime-analytics-timer:
     build:
       context: ./nt-scada/flink
@@ -342,9 +337,9 @@ services:
     restart: unless-stopped
     command: ["python3", "/opt/flink/jobs/timer_producer.py"]
 
-  # ---------------------------------------------------------
+  
   # GRAFANA
-  # ---------------------------------------------------------
+  
   grafana:
     image: grafana/grafana:latest
     container_name: grafana
@@ -364,6 +359,6 @@ services:
       - scada-network
     restart: unless-stopped
 
-# ---------------------------------------------------------
+
 # NETWORK + VOLUMES
-# ---------------------------------------------------------
+
