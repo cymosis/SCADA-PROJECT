@@ -1,6 +1,5 @@
 import json
 import os
-from datetime import datetime
 from kafka import KafkaConsumer
 from influxdb_client import InfluxDBClient, Point, WritePrecision
 from influxdb_client.client.write_api import SYNCHRONOUS
@@ -9,16 +8,13 @@ from influxdb_client.client.write_api import SYNCHRONOUS
 # Configuration
 # -----------------------------
 KAFKA_BOOTSTRAP_SERVERS = os.getenv('KAFKA_BOOTSTRAP_SERVERS', 'localhost:9092')
-KAFKA_TOPIC = 'scada.normal'  # Topic for normal data
-KAFKA_GROUP_ID = 'normal-data-consumer'
+KAFKA_TOPIC = 'scada.actuators_v2'
+KAFKA_GROUP_ID = 'excel-row-consumer'
 
 INFLUXDB_URL = os.getenv('INFLUXDB_URL', 'http://localhost:8086')
-INFLUXDB_TOKEN = os.getenv('INFLUXDB_TOKEN', 'nt-scada-token-secret-key-12345')
+INFLUXDB_TOKEN = os.getenv('INFLUXDB_TOKEN', 'RazmCJoh77X-O_obg7aovmlsPaLd8R9OjNT1efWnV3IQkpgnmb5ZSRoXTk1LxitRzhtWcaDHDPNDMtqUcfrHsw==')
 INFLUXDB_ORG = os.getenv('INFLUXDB_ORG', 'nt-scada')
-INFLUXDB_BUCKET = os.getenv('INFLUXDB_BUCKET', 'scada_data_normal')
-
-# Keys to store as tags
-TAG_KEYS = ["P1_STATE", "P2_STATE", "P3_STATE", "P4_STATE", "P5_STATE", "P6_STATE"]
+INFLUXDB_BUCKET = os.getenv('INFLUXDB_BUCKET', 'scada_data')
 
 # -----------------------------
 # Kafka Consumer Setup
@@ -44,46 +40,46 @@ write_api = client.write_api(write_options=SYNCHRONOUS)
 print(f"✓ Connected to InfluxDB bucket '{INFLUXDB_BUCKET}' at {INFLUXDB_URL}")
 
 # -----------------------------
-# Consume and Write Loop
+# Kafka Consume & Write Loop
 # -----------------------------
 message_count = 0
 
+# Define which keys are tags
+TAG_KEYS = ["P1_STATE", "P2_STATE", "P3_STATE", "P4_STATE", "P5_STATE", "P6_STATE"]
+
 try:
     for msg in consumer:
-        data = msg.value
+        data = msg.value  # JSON message
 
         # Create InfluxDB Point
-        point = Point("normal_data")  # Measurement for normal data
+        point = Point("actuator_data")
 
         # Add tags dynamically
         for tag_key in TAG_KEYS:
             if tag_key in data:
                 point.tag(tag_key, str(data[tag_key]))
 
-        # Add fields
+        # Add all other fields
         for key, value in data.items():
-            if key == "t_stamp" and value:
-                if isinstance(value, str):
-                    try:
-                        value = datetime.fromisoformat(value)
-                    except ValueError:
-                        value = datetime.strptime(value, "%Y-%m-%d %H:%M:%S")
+            if key == "t_stamp":
                 point.time(value, WritePrecision.NS)
             elif key not in TAG_KEYS:
+                # Force numeric types to float, everything else as string
                 if isinstance(value, (int, float)):
                     point.field(key, float(value))
-                elif value is not None:
+                else:
                     point.field(key, str(value))
 
-        # Write point to InfluxDB
+        # Write to InfluxDB
         write_api.write(bucket=INFLUXDB_BUCKET, org=INFLUXDB_ORG, record=point)
         message_count += 1
 
+        # Log progress every 100 messages
         if message_count % 100 == 0:
-            print(f"✓ {message_count} normal messages written")
+            print(f"✓ {message_count} messages written")
 
 except KeyboardInterrupt:
-    print("Shutting down normal data consumer...")
+    print("Shutting down consumer...")
 
 finally:
     consumer.close()

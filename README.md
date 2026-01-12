@@ -14,132 +14,178 @@
 
 ---
 
-## Team Members
+## 👥 Team Members
 
-1.  **Narayan Anshu**
-2.  **Sheillah Khaluvitsi**
-3.  **Cynthia Mutisya**
+1.  **Cynthia Mutisya**
+2.  **Narayan Anshu**
+3.  **Sheillah Khaluvitsi**
 
 **GitHub Repo**: [https://github.com/cymosis/SCADA-PROJECT](https://github.com/cymosis/SCADA-PROJECT)
 
+---
 
+## 📖 Table of Contents
+
+- [Overview](#-overview)
+- [System Architecture](#-system-architecture)
+- [Key Technologies](#-key-technologies)
+- [Features](#-features)
+- [Work Plan & Phases](#-work-plan--phases)
+- [Getting Started](#-getting-started)
+- [Service Dashboard](#-service-dashboard)
+- [Project Structure](#-project-structure)
+- [Additional Documentation](#-additional-documentation)
+- [Troubleshooting](#-troubleshooting)
+- [Contributing](#-contributing)
+- [License](#-license)
 
 ---
 
-## Overview
+## 🔭 Overview
 
-### The aim of the project is to develop a supervisory control and data acquisition platform based on open-source technologies. We implement ingesting, storing, analyzing, and visualizing large volumes of analog and digital inputs collected from the SWaT dataset.
+The aim of the project is to develop a supervisory control and data acquisition platform based on open-source technologies. We implement ingesting, storing, analyzing, and visualizing large volumes of analog and digital inputs collected from sensors. We also add support for handling analog and digital outputs sent from the SCADA to actuators (e.g., breakers, valves, and other equipment which turns electric signals into physical actions).
+
+### 🎯 Use Cases
+
+- **Industrial IoT Monitoring**: Real-time monitoring of manufacturing processes and equipment
+- **Predictive Maintenance**: Detect equipment failures before they occur using ML models
+- **Critical Infrastructure**: Monitor water treatment plants, power grids, and other essential systems
+- **Digital Twin**: Create virtual replicas of physical industrial systems
+- **Research & Education**: Learn about SCADA systems, stream processing, and anomaly detection
+- **Cybersecurity**: Test and validate security measures for industrial control systems
+
 ---
 
-## System Architecture
+## 🏗 System Architecture
 
+The proposed architecture leverages Kubernetes for orchestration and a robust pipeline for data processing.
+
+```mermaid
+graph TD
+    subgraph "Data Sources"
+        S[Industrial Sensors] -->|Real-time Data| K[Apache Kafka]
+        A[Actuators] -->|Status| K
+        D[SWaT & Other Datasets] -->|Simulated Stream| K
+    end
+
+    subgraph "Data Ingestion & Messaging"
+        K[Apache Kafka]
+    end
+
+    subgraph "Stream Processing"
+        K -->|Consume| F_Stream[Apache Flink Stream]
+        F_Stream -->|Anomaly Detection| F_Stream
+        F_Stream -->|Fine-grained Classification| F_Stream
+        F_Stream -->|Processed Data| K
+    end
+
+    subgraph "Batch Processing"
+        DB[(InfluxDB)] -->|Historical Data| F_Batch[Apache Flink Batch]
+        F_Batch -->|sktime Analysis| F_Batch
+        F_Batch -->|Train ML Models| M[Model Registry]
+    end
+
+    subgraph "Storage"
+        K -->|Persist| DB[(InfluxDB)]
+    end
+
+    subgraph "Visualization & Control"
+        DB -->|Query| G[Grafana]
+        G -->|Control Commands| K
+        K -->|Execute| A[Actuators]
+    end
+```
 
 ### Component Details
 
 1.  **Data Sources**:
+    *   **Industrial Sensors**: These represent the real-world analog and digital inputs (e.g., temperature, pressure, flow, switch states) that a traditional SCADA system would monitor. In this project, we will be simulating or using datasets that represent these.
+    *   **Actuators**: These are the physical devices (valves, breakers, motors, pumps) that the SCADA system controls based on analysis and user commands. They receive analog or digital output signals.
+    *   **SWaT & Other Datasets**: These provide the historical sensor and actuator data needed for training our batch models and initially testing your streaming pipelines. In simulation mode, a Kafka Producer reads the dataset and streams it line-by-line to simulate a live data feed.
 
-    *   **SWaT Dataset**: The SWAT (Secure Water Treatment) dataset was used in the implementation of our system.The dataset was provided by iTrust Centre for Research in Cybersecurity which is part of the Singapore University of Technology and Design. The data was collected from 51 sensors/ actuators across the six water treatment stages. The types of sensors include pressure sensors (25),flow (12), level (8), motor state (6) and analytical (4). The data consisted of two components: the normal data which was mainly collected on 22nd June 2020 and attack data which was collected on 20th July 2019. Kindly note that this data was in excel format.
-    *   There were six types of attacks that occurred on the 20th July 2019 and their timestamps were captured in the attack data. Because of privacy issues, we will not be able to share the data publicly as part of the agreement with iTrust for using their data.
-2.   **Data Pre-processing**
-      The data underwent pre-processing so as to prepare it for the next data processing stages. The timestamps were converted to an ISO 8601 format,labelled the attacks on the attack data i.e. placing 0 (normal) and 1 (attack) in the indicated times when there was an attack, standardized the column names from OPC UA format to human readable format (e.g. "LIT101.Pv"      → "LIT 101") and did mapping of the columns.
-3. **Data Ingestion and Messaging**: The pre-processed data was then fed to Kafka. Only one kafka broker, two producers and two consumers were implemented.There were three topics in kafka i.e. scada.normal, scada.attacks and scada.analytics_timer. The two producers i.e. Normal data producer and attack data producer read the respective excel files using pandas.The data was shuffled to simulate to simulate real world randomness. The data was sent in small batches or chunks of 1000 for the case of normal data and chunks of 100 for the case of attack data with a small time sleep delay between the messages to simulate a stream. The normal data producer streamed SCADA data from normal.xlsx file to the scada.normal kafka topic. The attack data producer on the other hand streamed data from the attacks.xlsx file to the scada.attacks kafka topic. The sacada. analytics_timer topic was used to trigger the flink analytics job.
-There were two consumers, the normal data consumer and the attack data consumer. The normal data consumer consumed data from the scada.normal topic and fed it to the normal  backet in InfluxDB. The attack data consumer on the other hand consumed data from the scada.attacks topic and fed it to the attack data bucket present in InfluxDB.
+2.  **Data Ingestion & Messaging**:
+    *   **Apache Kafka**: This is the backbone for real-time data ingestion.
+        *   **Purpose**: It acts as a highly scalable, fault-tolerant, and high-throughput distributed streaming platform. Sensors (or simulated sensor data) publish their readings to Kafka topics. Actuator commands from the SCADA interface are also published to Kafka topics to be consumed by the actuators.
 
-4. **Time series database**
-InfluxDB had four types of buckets i.e. normal data bucket, attack data bucket, anomaly data bucket and kafka analytics bucket. 
-The normal data bucket stored all raw normal SCADA data consumed from scada.noermal topic.
-The attack data bucket stored all the raw attack data consumed from scada.attack topic.
-The anomaly data bucket stored all the results from the anomaly detection process
-The kafka Analytics bucket stored realtime performance metrics for the kafka infrastructure generated by the Flink Job.
+3.  **Data Processing**:
+    *   **Apache Flink**: This will be the primary engine for both stream processing and batch processing.
+        *   **Stream Processing**:
+            *   Flink will consume real-time sensor data directly from Kafka topics. It will apply the pre-trained machine learning models (Pipeline 1: binary classification for anomaly detection, Pipeline 2: fine-grained classification) to the incoming data stream. This will enable real time anomaly detection, providing alerts or insights.
+        *   **Batch Processing**:
+            *   Flink will process historical data, likely pulled from InfluxDB or directly from specific Kafka topics that persist data for longer durations.
+            *   **Batch 1 & 2 (ML Model Training)**: Flink can be used to prepare (extract features, clean) the historical data before feeding it to sktime (or another library) for training binary and fine-grained classification models.
+            *   **Batch 3 (Daily Statistics)**: Flink can compute daily aggregates, averages, min/max values, and other statistics from stored data, which will then be pushed to InfluxDB or directly to visualization.
 
-5. **Flink**
-   Flink was used for realtime stream processing. We implemented one Flink Job Manager that acted as the coordinator, a Flink Task Manager that was responsible for the actual processing of the analytics. There were  four task slots present.There was a Flink job submitter that was responsible for the auto-deployment of the jobs and a real time analytics timer that was responsible for triggering the analytics. The entire process ran as follows: the timer was triggered every 30 seconds, Flink received the timer event then triggered the Kafka Analytics processor. The Kafka analytics processor then generated consumer metrics (lag, rate, status), producer metrics (throughput, errors), topic metrics (size, messages/sec) and system health score (0-100). All these metrics were then written to the kafka analytics bucket where it was available for visualization by Grafana.
-   
-6. **Anomaly Detection**
-   We implemented a multistep approach for anomaly dtection and classification. The anomaly detection process was done in four layers, the first layer was the z-score, second layer was rule based method, the third layer was the binary and fine grained model and the fourth layer was the pattern matching layer.
-   
-**Layer 1 (Statistical Z-Score method):** Z-score measures how many standard deviations a data point is from the mean. It shows if a data point os normal or unusual based on the historical data. It is usually given by:
+4.  **Time-Series Database**:
+    *   **InfluxDB**:
+        *   This will be used for storing all raw and processed sensor/actuator data for historical analysis, dashboarding, and serving as a data source for batch processing (e.g., retraining models). It's crucial for visualization and understanding trends over time.
 
-   Z = (X-μ)/σ
-   
-   Where: X is the current data point
-   
-          μ is the mean
-          
-          σ is the set standard deviation
-          
-   We had four thresholds for our Z-score as described below:
-   
-   |z| < 2.0  →  NORMAL     (within 95% of data)
-   
-   |z| > 2.0  →  MODERATE   (unusual, 95% confidence)
-   
-   |z| > 3.0  →  HIGH       (very unusual, 99.7% confidence)
-   
-   |z| > 4.0  →  CRITICAL   (extremely unusual, 99.99% confidence)
-   
-   The reason for using Z score is that most of the data is usually falls within within ±3σ. If the reading is any value outside this range, then the value is abnormal. One drawback of this method is that it assumes a normal distribution which is usually not the case in most datasets and also doe not have context i.e. it does not understand the physical meaning of the values.
-   
-**Layer 2 (Rule Based Detection):** In this method, safety rules and operational limits are applied. These are rules that under normal operation should never be violated. The types of rules used here include:
-Physical Constraints: We set physical  constraints on the datasets e.g. for the case of a temperature sensor, the temperature should not be below -10 and not above 100.
-Critical ranges (Safety Zones): We defined normal operation condition in the dataset e.g. for the case of a tank water level, 0 is the minimum value and 1000 is the maximum value,then 200 is critically low and 900 is critically high and so on.
-Valid state sets: Here, we defined the valid states of the pump where 0 represents off, 1 represents starting, 2 represents on and 3 represents stop
-The rules made were based on physical laws, equipment specifications, safety standards and engineering experience. The limitations of this method is however the following: requires complete set of rules so as to define all constraints, it is time consuming to build the rule set, may not adapt to system changes as needed and therefore might miss some attacks.
+5.  **Container Orchestration**:
+    *   **Kubernetes (K8s)**:
+        *   Kubernetes is a platform for automating deployment, scaling, and management of containerized applications. All our components (Kafka brokers, Flink jobs, InfluxDB, Grafana) will run as containers on Kubernetes. Kubernetes provides scalability, high availability, and simplified management for your distributed SCADA system. It can also be scaled up easily and can also ensure components restart automatically if they fail.
 
-**Layer 3 (Machine Learning Detection):** In this method, we used trained machie learning models to learn patterns in the data. Two types of models were used,binary model and fine frained model.
-Binary Model: The purpose of the Binary model was to classify the data point as either Normal(0) or attack(1). The Random Forest Classifier was used in this case. The classifier used 100 decision trees and each tree voted. The majority won. The model was trained on the entire data, both normal and attack data.
-Fine-grained model: The purpose of this model was to classify the attacks into eight specific types. The Multi-class Random Forest Classifier was used in this case. The eight types of classes include NORMAL, DOS, NMRI, CMRI, SSCP, SSMP, MSCP, MSMP, RECON. The model was  trained on the labelled attack data.
+6.  **Data Visualization & Control**:
+    *   **Grafana**:
+        *   This will be our primary user interface for visualizing all sensor and actuator data (tabular, plots, dashboards) as it connects easily to InfluxDB and Kafka. It will display the results of our real-time anomaly detection and fine-grained classification. It can also be used to send *control commands* back to actuators (via a custom plugin or integration with Kafka).
 
-Attack type mapping was done at this stage as below:
+7.  **Actuators (Output Control)**:
+    *   **Industrial Equipment (Simulated)**: In a real SCADA system, these are physical devices but, in our project, we will likely simulate their behavior. Typically, Grafana via user interaction will send a control command to a Kafka topic. A Flink job will consume this command from Kafka and will then interface with the physical actuator but in our case, the actuator service will simply log the command or update a simulated state.
 
-    0: 'NORMAL',
-    
-    1: 'DOS',    # Denial of Service
-    
-    2: 'NMRI',   # Naive Malicious Response Injection
-    
-    3: 'CMRI',   # Complex Malicious Response Injection
-    
-    4: 'SSCP',   # Single Stage Single Point
-    
-    5: 'SSMP',   # Single Stage Multi Point
-    
-    6: 'MSCP',   # Multi Stage Single Point
-    
-    7: 'MSMP',   # Multi Stage Multi Point
-    
-    8: 'RECON'   # Reconnaissance
-    
-   The reason for using Random Forest was that it was able to handle the features well, it could handle non liear relationships and it worked well with imbalanced data. The limitations include, hard to explain why it classified somthing the way it did, it could memorize training data leading to overfitting and new attacks could be misclassified as it only classifies based on what it has seen.
-   
-**Layer 4 (Pattern Based Classification):** This section dealt with the analyzing of structure and scope of the anomalies so as to classify the attack type based on number of sensors affected, number of stages affected, type of sensors and historical patterns. We used the academic attack taxonomy from Goh et al.(2016).
+---
 
-DOS (denial of Service): ALL sensors showed constant values. There was no variation over time.
+## � Key Technologies
 
-NMRI (Naive Malicious Response Injection): Characterised by 1-2 actuators in the wrong state.
+| Technology | Version | Purpose |
+|-----------|---------|---------|
+| **Apache Kafka** | 7.7.0 | Distributed streaming platform for real-time data ingestion |
+| **Apache Flink** | 1.18.0 | Stream and batch processing engine |
+| **InfluxDB** | 2.7 | Time-series database for sensor/actuator data storage |
+| **Grafana** | 10.2.0 | Visualization and monitoring platform |
+| **Kubernetes** | Latest | Container orchestration and deployment |
+| **Python** | 3.9+ | Data processing, ML training, and producers |
+| **scikit-learn** | Latest | Machine learning library for classification models |
+| **sktime** | Latest | Time-series analysis and forecasting |
+| **Docker** | Latest | Containerization for all services |
 
-CMRI (Complex Malicious Response Injection): Characterised by 3+ actuators having coordinated changes.
+---
 
-SSCP (Single Stage Single Point): Characterised by 1-2 sensors affected in one stage.
+## ✨ Features
 
-SSMP (Single Stage Multi Point):Characterised by 3+ sensors being affected in the same stage.Target one process stage.
+### Real-time Data Processing
+- **High-throughput Ingestion**: Kafka handles thousands of sensor readings per second
+- **Stream Processing**: Real-time anomaly detection using Apache Flink
+- **Binary Classification**: Detects normal vs. anomalous sensor behavior
+- **Fine-grained Classification**: Classifies sensor states into 7 categories (CRITICALLY_LOW, LOW, BELOW_OPTIMAL, OPTIMAL, ABOVE_OPTIMAL, HIGH, CRITICALLY_HIGH)
 
-MSCP (Multi Stage Single Point): Characterised by Same sensor type across 2+ stages being affected. Target a specific sensor family
+### Machine Learning & Analytics
+- **Automated Model Training**: Batch jobs train Random Forest and Gradient Boosting models
+- **Feature Engineering**: Extracts time-series features using `sktime`
+- **Daily Statistics**: Computes aggregates, averages, and trends
+- **Model Registry**: Stores and versions trained ML models
 
-MSMP (Multi Stage Multi Point): Characterised by 5+ sensors across 3+ stages being affected.
+### Data Visualization
+- **Interactive Dashboards**: Pre-configured Grafana dashboards for real-time monitoring
+- **Historical Analysis**: Query and visualize trends over time
+- **Anomaly Alerts**: Visual indicators for detected anomalies
+- **Tabular Views**: Comprehensive sensor and actuator data tables
 
-RECON (Reconnaissance): Characterized by Rapid sequential sensor access and Frequent small anomalies.
+### Actuator Control
+- **Command Publishing**: Send control commands from Grafana to actuators
+- **Simulated Actuators**: Mock industrial equipment for testing
+- **Closed-loop Control**: Complete feedback loop from sensors to actuators
+- **Command Logging**: Track all control commands for audit purposes
 
-The advantages of this method is that it does not require any training and it is context aware. The limitations however are that it requires anomalies from Layers 1 - 3, has a fixed taxonomy and it cannot adapt to new patterns automatically.
+### Scalability & Reliability
+- **Kubernetes Orchestration**: Auto-scaling and self-healing infrastructure
+- **High Availability**: Redundant components and automatic failover
+- **Distributed Processing**: Workload distributed across multiple nodes
+- **Data Persistence**: Reliable storage with InfluxDB time-series database
 
-Each anomaly event is then written to the Anomaly data bucket in influxDB. These results will then be visualized in Grafana.
+---
 
-7. **Visualization:** The system used Grafana to visualize both the industrial process and the anomaly metrics. Two dashboards were created, a SCADA operations monitoring dashboard and an anomaly detection dashboard.
-   SCADA Operation Monitoring Dashboard: This was responsible for monitoring normal SCADA Operations. Data used was from the norml data bucket present in influxDB. It displayed the sensor values at the different water treatment stages including the status of the actuators.
-   Anomaly Detection Dashboard: This was used to display the performance and results of the anomaly detection system. It consumed data from the anomaly data bucket present in influxDB. 11 panels were implemented in this regard.
+## �📅 Work Plan & Phases
 
-## Work Plan & Phases
-
+We plan to implement the project in phases as described below. We have not defined roles for each team member yet since it will be more of teamwork.
 
 *   **Phase 1: Setup & Data Simulation (Sheillah, Cynthia & Narayan)**
     *   Set up a local Kubernetes cluster.
@@ -164,7 +210,7 @@ Each anomaly event is then written to the Anomaly data bucket in influxDB. These
 
 ---
 
-## Getting Started (Local Docker Version)
+## ⚡ Getting Started (Local Docker Version)
 
 *Note: While the target architecture uses Kubernetes, this repository currently includes a Docker Compose setup for easy local development.*
 
@@ -194,7 +240,7 @@ Each anomaly event is then written to the Anomaly data bucket in influxDB. These
 
 ---
 
-## Service Dashboard
+## 🖥 Service Dashboard
 
 Access the various components of the system using the following credentials:
 
@@ -209,7 +255,7 @@ Access the various components of the system using the following credentials:
 
 ---
 
-## Project Structure
+## 📂 Project Structure
 
 ```text
 SCADA-PROJECT/
@@ -227,7 +273,7 @@ SCADA-PROJECT/
 
 ---
 
-## Troubleshooting
+## 🔧 Troubleshooting
 
 ### Common Issues
 
@@ -249,6 +295,20 @@ SCADA-PROJECT/
 
 ---
 
+## � Additional Documentation
+
+For more detailed information, please refer to the following documentation files in the `nt-scada/` directory:
+
+- **[ARCHITECTURE.md](nt-scada/ARCHITECTURE.md)** - Deep dive into system architecture and design decisions
+- **[QUICK_START.md](nt-scada/QUICK_START.md)** - Simplified quick start guide
+- **[TROUBLESHOOTING.md](nt-scada/TROUBLESHOOTING.md)** - Comprehensive troubleshooting guide
+- **[PRODUCTION_GUIDE.md](nt-scada/PRODUCTION_GUIDE.md)** - Production deployment guidelines
+- **[IMPLEMENTATION_SUMMARY.md](nt-scada/IMPLEMENTATION_SUMMARY.md)** - Summary of implementation details
+- **[ATTACK_DATA_SETUP_GUIDE.md](nt-scada/ATTACK_DATA_SETUP_GUIDE.md)** - Guide for loading SWaT attack data
+
+---
+
+## 🤝 Contributing
 
 Contributions are welcome! Here's how you can help:
 
@@ -283,51 +343,21 @@ Contributions are welcome! Here's how you can help:
    - Ensure all tests pass
 
 ### Areas for Contribution
-- **Bug Fixes**: Help identify and fix issues
-- **New Features**: Add new functionality or components
-- **Documentation**: Improve or expand documentation
-- **Testing**: Add or improve test coverage
-- **UI/UX**: Enhance Grafana dashboards and visualizations
-- **Performance**: Optimize processing pipelines
+- 🐛 **Bug Fixes**: Help identify and fix issues
+- ✨ **New Features**: Add new functionality or components
+- 📝 **Documentation**: Improve or expand documentation
+- 🧪 **Testing**: Add or improve test coverage
+- 🎨 **UI/UX**: Enhance Grafana dashboards and visualizations
+- ⚡ **Performance**: Optimize processing pipelines
 
 ---
-### References
-1. Dr.K.Sundravadivelu, Mrs.P.Renuka, Mrs.V.Suganthi, Mrs.S.Durgadevi, & Krishna, M.
-(2024). Streaming intelligence: Mastering stream processing for real-time data analysis. SK
-Research Group of Companies.
 
-2. Eltomy, R., & Lalouani, W. (2024). Explainable intrusion detection in industrial control systems. 2024 IEEE 7th International Conference on Industrial Cyber-Physical Systems
-(ICPS), 1-8. https://doi.org/10.1109/icps59941.2024.10640024https://doi.org/10.1109/icps59941.2024.
+## �📄 License
 
-3.Rieger, C., Ray, I., Zhu, Q., & Haney, M. A. (2019). Industrial control systems security and resiliency: Practice and theory. Springer Nature.
-
-4.Kreps, J., Narkhede, N., Rao, J. (2011). Kafka: A distributed messaging system for log processing. In Proceedings of the 6th International Workshop on Networking Meets Databases (NetDB), Athens, Greece
-
-5. Goldstein, M., & Uchida, S. (2016). A comparative evaluation of unsupervised anomaly detection algorithms for multivariate data, 11(4), e0152173.
-
-6. Urbina, D. I., Giraldo, J. A., Cardenas, A. A., Tippenhauer, N. O., Valente, J., Faisal, M., ... & Candell, R. (2016). Limiting the impact of stealthy attacks on industrial control systems. In *Proceedings of the 2016 ACM SIGSAC conference on computer and communications security* (pp. 1092-1105).
-
-7. Mathur, A. P., & Tippenhauer, N. O. (2016). SWaT: A water treatment testbed for research and training on ICS security. In *2016 international workshop on cyber-physical systems for smart water networks (CySWater)* (pp. 31-36). IEEE.
-
-8. Goh, J., Adepu, S., Junejo, K. N., & Mathur, A. (2016). A dataset to support research in the design of secure water treatment systems. In *International Conference on Critical Information Infrastructures Security* (pp. 88-99). Springer.
-
-9. Ahmed, C. M., Palleti, V. R., & Mathur, A. P. (2017). WADI: a water distribution testbed for research in the design of secure cyber physical systems. In *Proceedings of the 3rd International Workshop on Cyber-Physical Systems for Smart Water Networks* (pp. 25-28).
-
-10. Goh, J., Adepu, S., Tan, M., & Lee, Z. S. (2017). Anomaly detection in cyber physical systems using recurrent neural networks. In *2017 IEEE 18th International Symposium on High Assurance Systems Engineering (HASE)* (pp. 140-145). IEEE.
-
-11.Gao, W., Morris, T., Reaves, B., & Richey, D. (2010). On SCADA control system command and response injection and intrusion detection. *In 2010 eCrime Researchers Summit* (pp. 1-9). IEEE.
-
-12.NIST. (2015). *Guide to Industrial Control Systems (ICS) Security*. NIST Special Publication 800-82 Revision 2.
-
-
-   
-
-
-
-
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 ---
 
 <p align="center">
-  We acknowledge using the SWAT data set in this project
+  Built with ❤️ by the NT-SCADA Team
 </p>

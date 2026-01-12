@@ -1,0 +1,12 @@
+NT-SCADA Anomaly Detection Performance Metrics
+==================================================
+
+Precision:  0.1291
+Recall:     0.9207
+F1-Score:   0.2265
+Accuracy:   0.2662
+
+True Positives:   1824
+False Positives:  12301
+True Negatives:   2695
+False Negatives:  157
