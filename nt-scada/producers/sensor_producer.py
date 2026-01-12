@@ -40,7 +40,7 @@ def create_kafka_producer():
             producer = KafkaProducer(
                 bootstrap_servers=KAFKA_BOOTSTRAP_SERVERS,
                 value_serializer=lambda v: json.dumps(v).encode('utf-8'),
-                key_serializer=lambda k: k.encode('utf-8') if k else None,
+                # Key serialization handled explicitly in send() for partitioning control
                 acks='all',
                 retries=3
             )
@@ -136,9 +136,11 @@ def main():
                 sensor_data = generate_sensor_data(sensor_id)
                 
                 # Send to Kafka
+                # Explicitly use sensor_id as key to ensure all data for a sensor 
+                # goes to the same partition (Strict Ordering)
                 producer.send(
                     TOPIC_SENSORS,
-                    key=sensor_id,
+                    key=sensor_id.encode('utf-8'),
                     value=sensor_data
                 )
                 

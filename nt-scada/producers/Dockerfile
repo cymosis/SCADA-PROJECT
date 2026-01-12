@@ -2,6 +2,8 @@ FROM python:3.11-slim
 
 WORKDIR /app
 
+ENV PYTHONUNBUFFERED=1
+
 # Install dependencies
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
@@ -15,7 +17,7 @@ ENV PRODUCER_TYPE=sensor
 
 # Run the appropriate producer based on environment variable
 CMD if [ "$PRODUCER_TYPE" = "sensor" ]; then \
-        python sensor_producer.py; \
+    python sensor_producer.py; \
     else \
-        python actuator_producer.py; \
+    python actuator_producer.py; \
     fi

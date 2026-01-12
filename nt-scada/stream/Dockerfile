@@ -1,4 +1,4 @@
-FROM python:3.11-slim
+FROM python:3.10-slim
 
 WORKDIR /app
 
@@ -10,10 +10,8 @@ RUN apt-get update && apt-get install -y \
 
 # Install dependencies
 COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
-
-# Install ML dependencies
-RUN pip install --no-cache-dir \
+RUN pip install --no-cache-dir -r requirements.txt \
+    && pip install --no-cache-dir \
     scikit-learn==1.3.2 \
     joblib==1.3.2 \
     numpy==1.26.2
